@@ -93,7 +93,7 @@
 
 /* Positions of Druid-pictures */
 #define GELB_DRUID_X		2*40
-#define GELB_DRUID_Y		0
+#define GELB_DRUID_Y		-3
 #define VIOLETT_DRUID_X		2*220
 #define VIOLETT_DRUID_Y		GELB_DRUID_Y
 
