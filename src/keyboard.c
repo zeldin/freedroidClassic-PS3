@@ -113,6 +113,7 @@ keyboard_update(void)
 {
   static int Number_Of_Screenshot=0;
   char *Screenshoot_Filename;
+  Uint8 axis; 
 
   // Screenshoot_Filename=malloc(100);
   //="This is a dummy string, that should be sufficiently long ";
@@ -254,15 +255,15 @@ keyboard_update(void)
 	      break;
 	    case SDLK_s:
 	      CurrentlySPressed=TRUE;
-#ifndef NEW_ENGINE
+
 	      Screenshoot_Filename=malloc(100);
 	      printf("\n\nScreenshoot function called.\n\n");
 	      sprintf( Screenshoot_Filename , "Screenshot_%d.bmp", Number_Of_Screenshot );
 	      printf("\n\nScreenshoot function: The Filename is: %s.\n\n" , Screenshoot_Filename );
-	      SDL_SaveBMP( ScaledSurface , Screenshoot_Filename );
+	      SDL_SaveBMP( ne_screen , Screenshoot_Filename );
 	      Number_Of_Screenshot++;
 	      free(Screenshoot_Filename);
-#endif 
+
 	      break;
 	    case SDLK_t:
 	      CurrentlyTPressed=TRUE;
@@ -455,7 +456,56 @@ keyboard_update(void)
 	      break;
 	    }
 	  break;
+
+	case SDL_JOYAXISMOTION:
+	  axis = event.jaxis.axis;
+	  if (axis == 0 || ((num_joy_axes >= 5) && (axis == 3)) ) /* x-axis */
+	    {
+	      if (event.jaxis.value > 15000)   /* about half tilted */
+		{
+		  CurrentlyRightPressed = TRUE;
+		  CurrentlyLeftPressed = FALSE;
+		}
+	      else if (event.jaxis.value < -15000)
+		{
+		  CurrentlyLeftPressed = TRUE;
+		  CurrentlyRightPressed = FALSE;
+		}
+	      else
+		{
+		  CurrentlyLeftPressed = FALSE;
+		  CurrentlyRightPressed= FALSE;
+		}
+	    }
+	  else if ((axis == 1) || ((num_joy_axes >=5) && (axis == 4))) /* y-axis */
+	    {
+	      if (event.jaxis.value > joy_sensitivity*1000)  
+		{
+		  CurrentlyDownPressed = TRUE;
+		  CurrentlyUpPressed = FALSE;
+		}
+	      else if (event.jaxis.value < -joy_sensitivity*1000)
+		{
+		  CurrentlyUpPressed = TRUE;
+		  CurrentlyDownPressed = FALSE;
+		}
+	      else
+		{
+		  CurrentlyUpPressed = FALSE;
+		  CurrentlyDownPressed= FALSE;
+		}
+	    }
+		
+	  break;
 	  
+	case SDL_JOYBUTTONDOWN:
+	  CurrentlySpacePressed = TRUE;
+	  break;
+
+	case SDL_JOYBUTTONUP:
+	  CurrentlySpacePressed = FALSE;
+	  break;
+
 	default:
 	  break;
 	}
