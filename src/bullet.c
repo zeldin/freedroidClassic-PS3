@@ -72,6 +72,9 @@ MoveBullets (void)
       if (CurBullet->type == OUT)
 	continue;
 
+      CurBullet->prev_pos.x = CurBullet->pos.x;
+      CurBullet->prev_pos.y = CurBullet->pos.y;
+      
       CurBullet->pos.x += CurBullet->speed.x * Frame_Time ();
       CurBullet->pos.y += CurBullet->speed.y * Frame_Time ();
 
@@ -259,6 +262,10 @@ CheckBulletCollisions (int num)
   double xdist, ydist;
   Bullet CurBullet = &AllBullets[num];
   static int FBTZaehler = 0;
+  finepoint step;
+  finepoint checkpos;
+  int num_check_steps;
+  
 
   switch (CurBullet->type)
     {
@@ -320,10 +327,24 @@ CheckBulletCollisions (int num)
     default:
       
       // Check for collision with background
-      if (IsPassable (CurBullet->pos.x, CurBullet->pos.y, CENTER) != CENTER)
+      step.x = CurBullet->pos.x - CurBullet->prev_pos.x;
+      step.y = CurBullet->pos.y - CurBullet->prev_pos.y;
+      num_check_steps = (int)( sqrt(step.x*step.x + step.y*step.y)/ COLLISION_STEPSIZE);
+      if (num_check_steps == 0) num_check_steps = 1;
+      step.x /= 1.0* num_check_steps;
+      step.y /= 1.0* num_check_steps;
+      
+      for (i=0; i <= num_check_steps; i++)
 	{
-	  DeleteBullet (num);
-	  return;			
+	  checkpos.x = CurBullet->prev_pos.x + i*step.x;
+	  checkpos.y = CurBullet->prev_pos.y + i*step.y;
+	  if (IsPassable (checkpos.x, checkpos.y, CENTER) != CENTER)
+	    {
+	      CurBullet->pos.x = checkpos.x;
+	      CurBullet->pos.y = checkpos.y;
+	      DeleteBullet (num);
+	      return;			
+	    }
 	}
       
       // check for collision with influencer
@@ -408,10 +429,6 @@ CheckBulletCollisions (int num)
   checkt Collisionen des Blasts num mit Bullets und Druids
   UND reagiert darauf
   
-  LastBlastHit: Diese Variable dient dazu, doppelte Messages zu unter-
-  dr"ucken. Blasts schaden mehrere Phasen lang. Der Z"ahler LastBlastHit
-  gibt den Zeitabstand zur letzten Verletzung durch Blasts an.
-  Er wird in der Hauptschleife erh"oht.
   @Ret: void 
   @Int:
   * $Function----------------------------------------------------------*/
@@ -471,9 +488,6 @@ CheckBlastCollisions (int num)
       if (!InvincibleMode)
 	{
 	  Me.energy -= Blast_Damage_Per_Second * Frame_Time ();
-	  if ((PlusExtentionsOn) && (LastBlastHit > 5))
-	    InsertMessage ("Blast hit me! OUCH!");
-	  LastBlastHit = 0;
 	  
 	  // So the influencer got some damage from the hot blast
 	  // Now most likely, he then will also say so :)

@@ -952,8 +952,6 @@ CheckInfluenceEnemyCollision (void)
 
 	      BounceSound ();
 
-	      InsertMessage ("void InfEnemColl: Collision detected");
-
 	    }			/* if first_collision */
 
 	  // shortly stop this enemy, then send him back to previous waypoint
