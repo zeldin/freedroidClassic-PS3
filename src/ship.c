@@ -41,6 +41,16 @@
 #include "SDL_rotozoom.h"
 
 int NoKeyPressed (void);
+//--------------------
+// Definitions for the menu inside the in-game console
+//
+#define CONS_MENU_HEIGHT 		256
+#define CONS_MENU_LENGTH 		100
+
+SDL_Rect Cons_Menu_Rect = {32, 180, 100, 256};
+SDL_Rect Cons_Rect = {16, 162, 595, 315};
+
+SDL_Rect Cons_Text_Rect = {175, 180, SCREENLEN-175, 305}; 
 
 int ConsoleMenuPos=0;
 
@@ -448,250 +458,6 @@ PaintConsoleMenu (void)
   return;
 }	// PaintConsoleMenu ()
 
-/*@Function============================================================
-@Desc: Zeigt alle erlaubten Roboter.
-
-@Ret: 
-@Int:
-* $Function----------------------------------------------------------*/
-void
-GreatDruidShow (void)
-{
-  char InfoText[10000];
-  int Infodroid;
-  int LeaveThisInformationPart;
-  char PassOn = 0;
-
-  DebugPrintf (2, "\nvoid GreadDruidShow(void): Function call confirmed.");
-
-  // wait for user to release the space, that has been pressed for transfer-mode
-  while (SpacePressed ()) ;
-
-  SetUserfenster ( KON_BG_COLOR );
-
-  for (Infodroid = Me.type; Infodroid > -1;)
-    {
-
-      //--------------------
-      // At first we print out the most general information about this droid
-      //
-      
-      LeaveThisInformationPart = FALSE;
-      while ( !LeaveThisInformationPart )
-	{
-
-	  SDL_SetClipRect ( ne_screen , NULL );
-	  DisplayImage ( find_file( NE_CONSOLE_BG_PIC2_FILE , GRAPHICS_DIR, FALSE) );
-	  DisplayBanner (NULL, NULL,  BANNER_FORCE_UPDATE );
-
-	  sprintf( InfoText , "Unit type %s - %s" , Druidmap[Infodroid].druidname , 
-		   Classname[Druidmap[Infodroid].class] );
-	  DisplayText (InfoText, USERFENSTERPOSX, USERFENSTERPOSY, &User_Rect);
-
-	  ShowRobotPicture (USERFENSTERPOSX, USERFENSTERPOSY + 2 * FONTHOEHE, Infodroid );
-
-	  sprintf( InfoText, "Entry : %d\nClass : %s\nHeight : %f\nWeight: %f \nDrive : %s \nBrain : %s " , 
-		   Infodroid+1 , 
-		   Classes[Druidmap[Infodroid].class] ,
-		   Druidmap[Infodroid].height ,
-		   Druidmap[Infodroid].weight ,
-		   Drivenames[ Druidmap[Infodroid].drive ] ,
-		   Brainnames[ Druidmap[Infodroid].brain ] );
-
-	  DisplayText (InfoText, MENUTEXT_X, USERFENSTERPOSY + FontHeight (Menu_BFont),
-		       &Menu_Rect);
-
-
-	  SDL_Flip (ne_screen);
-
-	  PassOn = 0;
-	  while (!PassOn)
-	    {
-	      if (UpPressed ())
-		{
-		  PassOn = 1;
-		  Infodroid--;
-		  // Einem zu schnellen Weiterbl"attern vorbeugen
-		  while (UpPressed () || DownPressed ()) ;
-		}
-	      
-	      if (DownPressed ())
-		{
-		  Infodroid++;
-		  PassOn = 1;
-		  // Einem zu schnellen Weiterbl"attern vorbeugen
-		  while (UpPressed () || DownPressed ()) ;
-		}
-
-	      if (Infodroid > Me.type)
-		Infodroid = DRUID001;
-	      if (Infodroid < DRUID001)
-		Infodroid = Me.type;
-	      
-	      if ( (LeftPressed ()) || (RightPressed ()))
-		{
-		  PassOn = 1;
-		  while ((RightPressed ()) || (LeftPressed ()) || (UpPressed ())
-			 || (DownPressed ())) ;
-		  LeaveThisInformationPart = TRUE;
-		}
-	      if (SpacePressed ())
-		{
-		  while (SpacePressed ()) ;
-		  DebugPrintf (2, "\nvoid GreadDruidShow(void): Alternate end of function reached via Space1.");
-		  return;
-		}
-	    }
-	}; // while !LeaveThisInformationPart
-
-
-      //--------------------
-      // Next we print the equipment this droid comes with, which includes the sensors he has,
-      // and the fake 'armament' from the original game.
-      //
-
-      LeaveThisInformationPart = FALSE;
-      while ( !LeaveThisInformationPart )
-	{
-	  ClearUserFenster( );
-	  SDL_SetClipRect ( ne_screen , NULL );
-	  DisplayImage ( find_file( NE_CONSOLE_BG_PIC2_FILE , GRAPHICS_DIR, FALSE) );
-	  DisplayBanner (NULL, NULL,  BANNER_FORCE_UPDATE );
-	  
-	  sprintf( InfoText , "Unit type %s - %s" , Druidmap[Infodroid].druidname , Classname[Druidmap[Infodroid].class] );
-	  
-	  DisplayText (InfoText, USERFENSTERPOSX, USERFENSTERPOSY, &User_Rect);
-	  
-	  ShowRobotPicture (USERFENSTERPOSX, USERFENSTERPOSY + 2 * FONTHOEHE, Infodroid);
-	  
-	  strcpy (InfoText, "Armamant : ");
-	  strcat (InfoText, Weaponnames[ Druidmap[Infodroid].armament ]);
-	  strcat (InfoText, "\nSensors  1: ");
-	  strcat (InfoText, Sensornames[ Druidmap[Infodroid].sensor1 ]);
-	  strcat (InfoText, "\n          2: ");
-	  strcat (InfoText, Sensornames[ Druidmap[Infodroid].sensor2 ]);
-	  strcat (InfoText, "\n          3: ");
-	  strcat (InfoText, Sensornames[ Druidmap[Infodroid].sensor3 ]);
-	  
-	  DisplayText (InfoText, MENUTEXT_X, USERFENSTERPOSY + FontHeight (Menu_BFont),
-		       &Menu_Rect);
-	  
-	  SDL_Flip (ne_screen);
-	  
-	  PassOn = 0;
-	  while (!PassOn)
-	    {
-	      if (UpPressed ())
-		{
-		  PassOn = 1;
-		  Infodroid--;
-		  // Einem zu schnellen Weiterbl"attern vorbeugen
-		  while (UpPressed () || DownPressed ()) ;
-		}
-	      
-	      if (DownPressed ())
-		{
-		  Infodroid++;
-		  PassOn = 1;
-		  // Einem zu schnellen Weiterbl"attern vorbeugen
-		  while (UpPressed () || DownPressed ()) ;
-		}
-	      
-	      if (Infodroid > Me.type)
-		Infodroid = DRUID001;
-	      if (Infodroid < DRUID001)
-		Infodroid = Me.type;
-	      
-	      if ( (RightPressed ()) || (LeftPressed ()) )
-		{
-		  LeaveThisInformationPart = TRUE;
-		  PassOn = 1;
-		  while ((RightPressed ()) || (LeftPressed ()) || (UpPressed ())
-			 || (DownPressed ())) ;
-		}
-	      if (SpacePressed ())
-		{
-		  while (SpacePressed ()) ;
-		  return;
-		}
-	    }
-	}; // while !LeaveThisInformationPart
-	  
-	  
-      /*
-       * Ausgabe der Informationen bezuglich des Druidhintergrundes
-       *
-       */
-
-      // SetTextColor (208, BANNER_VIOLETT );	// RED // YELLOW
-      // ClearUserFenster ();
-
-      LeaveThisInformationPart = FALSE;
-      while ( !LeaveThisInformationPart )
-	{
-	  SDL_SetClipRect ( ne_screen , NULL );
-	  DisplayImage ( find_file( NE_CONSOLE_BG_PIC2_FILE , GRAPHICS_DIR, FALSE) );
-	  DisplayBanner (NULL, NULL,  BANNER_FORCE_UPDATE );
-	  
-
-	  sprintf( InfoText , "Unit type %s - %s" , Druidmap[Infodroid].druidname , Classname[Druidmap[Infodroid].class] );
-
-	  DisplayText (InfoText, USERFENSTERPOSX, USERFENSTERPOSY, &User_Rect);
-
-	  ShowRobotPicture (USERFENSTERPOSX, USERFENSTERPOSY + 2 * FONTHOEHE, Infodroid );
-
-	  strcpy (InfoText, "Notes: ");
-	  strcat (InfoText, Druidmap[Infodroid].notes);
-
-	  DisplayText (InfoText, MENUTEXT_X, USERFENSTERPOSY + FontHeight (Menu_BFont),
-		       &Menu_Rect);
-	  
-	  SDL_Flip (ne_screen);
-      
-	  PassOn = 0;
-	  while (!PassOn)
-	    {
-	      if (UpPressed ())
-		{
-		  PassOn = 1;
-		  Infodroid--;
-		  // Einem zu schnellen Weiterbl"attern vorbeugen
-		  while (UpPressed () || DownPressed ()) ;
-		}
-	      
-	      if (DownPressed ())
-		{
-		  Infodroid++;
-		  PassOn = 1;
-		  // Einem zu schnellen Weiterbl"attern vorbeugen
-		  while (UpPressed () || DownPressed ()) ;
-		}
-	      
-	      if (Infodroid > Me.type)
-		Infodroid = DRUID001;
-	      if (Infodroid < DRUID001)
-		Infodroid = Me.type;
-	      
-	      if ( (RightPressed ()) || (LeftPressed ()) )
-		{
-		  PassOn = 1;
-		  LeaveThisInformationPart = TRUE;
-		  while ((RightPressed ()) || (LeftPressed ()) || (UpPressed ())
-			 || (DownPressed ())) ;
-		}
-	      if (SpacePressed ())
-		{
-		  while (SpacePressed ()) ;
-		  return;
-		}
-	    }
-	}				/* for */
-      
-    }; // while !LeaveThisInformationPart
-  DebugPrintf (2, "\nvoid GreadDruidShow(void): End of function reached.");
-}; // GreatDruidShow() 
-
-
 /*-----------------------------------------------------------------
  * @Desc: Displays the concept view of Level "deck" in Userfenster
  * 	  
@@ -817,5 +583,118 @@ ClearUserFenster (void)
   return;
 
 } // void ClearUserFenster(void)
+
+
+/* ----------------------------------------------------------------------
+ * This function does the robot show when the user has selected robot
+ * show from the console menu.
+ * ---------------------------------------------------------------------- */
+void
+GreatDruidShow (void)
+{
+  int droidtype;
+  int key;
+  int finished;
+  int page;
+
+  droidtype = Me.type;
+  page = 0;
+
+  finished = FALSE;
+  while (!finished)
+    {
+      show_droid_info (droidtype, page);
+
+      key = getchar_raw();
+      switch (key)
+	{
+	case SDLK_RETURN:
+	case SDLK_SPACE:
+	case SDLK_ESCAPE:
+	  finished = TRUE;
+	  break;
+	case SDLK_UP:
+	  if (droidtype < Me.type) droidtype ++;
+	  break;
+	case SDLK_DOWN:
+	  if (droidtype > 0) droidtype --;
+	  break;
+	case SDLK_RIGHT:
+	  if (page < 2) page ++;
+	  break;
+	case SDLK_LEFT:
+	  if (page > 0) page --;
+	  break;
+	default:
+	  break;
+	} /* switch (key) */
+
+    } /* while !finished */
+
+  return;
+}; // void GreatDroidShow( void ) 
+
+/*------------------------------------------------------------
+ * display infopage page of droidtype
+ *
+ *  does update the screen, no SDL_Flip() necesary !
+ *
+ *------------------------------------------------------------*/
+void 
+show_droid_info (int droidtype, int page)
+{
+  char InfoText[1000];
+  SDL_SetClipRect ( ne_screen , NULL );
+  DisplayImage ( find_file( NE_CONSOLE_BG_PIC2_FILE , GRAPHICS_DIR, FALSE) );
+  DisplayBanner (NULL, NULL,  BANNER_NO_SDL_UPDATE | BANNER_FORCE_UPDATE );
+
+  ShowRobotPicture (Cons_Menu_Rect.x, Cons_Menu_Rect.y,  droidtype);
+
+  switch (page)
+    {
+    case 0:
+      sprintf( InfoText, "\
+Unit type %s - %s\n\
+Entry : %d\n\
+Class : %s\n\
+Height : %f\n\
+Weight: %f \n\
+Drive : %s \n\
+Brain : %s", Druidmap[droidtype].druidname, Classname[Druidmap[Me.type].class],
+	       droidtype+1, Classes[Druidmap[droidtype].class],
+	       Druidmap[droidtype].height, Druidmap[droidtype].weight,
+	       Drivenames [ Druidmap[ droidtype].drive], 
+	       Brainnames[ Druidmap[droidtype].brain ]);
+      break;
+    case 1:
+      sprintf( InfoText , "\
+Unit type %s - %s\n\
+Armamant : %s\n\
+Sensors  1: %s\n          2: %s\n          3: %s", Druidmap[droidtype].druidname,
+	       Classname[Druidmap[droidtype].class],
+	       Weaponnames [ Druidmap[droidtype].armament],
+	       Sensornames[ Druidmap[droidtype].sensor1 ],
+	       Sensornames[ Druidmap[droidtype].sensor2 ],
+	       Sensornames[ Druidmap[droidtype].sensor3 ]);
+      break;
+    case 2:
+      sprintf (InfoText, "\
+Unit type %s - %s\n\
+Notes: %s", Druidmap[droidtype].druidname , Classname[Druidmap[droidtype].class],
+	       Druidmap[droidtype].notes);
+      break;
+    default:
+      sprintf (InfoText, "ERROR: Page not implemented!! \nPlease report bug!");
+      break;
+    } /* switch (page) */
+
+  SetCurrentFont( Para_BFont );
+  DisplayText (InfoText, Cons_Text_Rect.x, Cons_Text_Rect.y, &Cons_Text_Rect);
+  SDL_Flip (ne_screen);
+
+} /* show_droid_info */
+
+
+
 
 #undef _ship_c

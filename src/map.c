@@ -1127,6 +1127,7 @@ TranslateMap (Level Lev)
   int ydim = Lev->ylen;
   int row, col;
   char *Buffer;
+  int tmp;
 
   DebugPrintf (2, "\n\nStarting to translate the map from human readable disk format into game-engine format.");
 
@@ -1139,7 +1140,8 @@ TranslateMap (Level Lev)
       for (col = 0; col < xdim  ; col++)
 	{
 
-	  sscanf( Lev->map[row]+4*col , "%d " , &(Buffer[col]) );
+	  sscanf( Lev->map[row]+4*col , "%d " , &tmp);
+	  Buffer[col] = (char)tmp;
 
 	}
 
