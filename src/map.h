@@ -109,7 +109,7 @@ char *ColorNames[] = {
   "Green",
   "Gray",
   "Blue",
-  "GreenBlue",
+  "Turquoise",
   "Dark",
   NULL
 };
