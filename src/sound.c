@@ -81,14 +81,20 @@ char *SoundSampleFilenames[ALL_SOUNDS] = {
 Mix_Chunk *Loaded_WAV_Files[ALL_SOUNDS];
 #endif
 
-#define ALL_MOD_MUSICS 2
+#define ALL_MOD_MUSICS NUM_COLORS    // we have a mod-background song per color now
 char *MOD_Music_SampleFilenames[ALL_MOD_MUSICS] = {
-  "ERRORSOUND_NILL.NOMOD",
-  "A_City_at_Night.mod"
+  "A_City_at_Night.mod",
+  "AnarchyMenu1.mod",     
+  "Arda.mod",	       
+  "Elysium.mod",	       
+  "Intro-Music.mod",      
+  "The_Last_V8.mod",
+  "Beachhead_2.mod"
 };
 
 #ifdef HAVE_LIBSDL_MIXER
 Mix_Music *Loaded_MOD_Files[ALL_MOD_MUSICS];
+Mix_Music *Tmp_MOD_File;
 #endif
 
 void 
@@ -212,7 +218,7 @@ Sorry...\n\
 
   
   Loaded_MOD_Files[0]=NULL;
-  for (i = 1; i < ALL_MOD_MUSICS; i++)
+  for (i = 0; i < ALL_MOD_MUSICS; i++)
     {
       fpath = find_file ( MOD_Music_SampleFilenames [ i ], SOUND_DIR, FALSE);
       Loaded_MOD_Files [ i ] = Mix_LoadMUS( fpath );
@@ -380,7 +386,7 @@ Switch_Background_Music_To ( char* filename_raw )
   if ( !sound_on ) return;
 
 
-  if ( filename_raw == SILENCE ) // SILENCE is defined as -1 I think
+  if ( filename_raw == NULL ) 
     {
       //printf("\nOld Background music channel has been halted.");
       // fflush(stdout);
@@ -389,57 +395,25 @@ Switch_Background_Music_To ( char* filename_raw )
       return;
     }
 
-  //--------------------
-  // Now we LOAD the music file from disk into memory!!
-  // But before we free the old music.  This is not a danger, cause the music
-  // is first initialized in Init_Audio with some dummy mod files, so that there
-  // is always something allocated, that we can free here.
-  //
-  // The loading of music and sound files is
-  // something that was previously done only in the initialisatzion funtion
-  // of the audio thing.  But now we want to allow for dynamic specification of
-  // music files via the mission files and that.  So we load the music now.
-  //
-  Mix_FreeMusic( Loaded_MOD_Files [ 0 ] );  
-  fpath = find_file ( filename_raw , SOUND_DIR, FALSE);
-  Loaded_MOD_Files [ 0 ] = Mix_LoadMUS( fpath );
-  if ( Loaded_MOD_Files[ 0 ] == NULL )
-    {
-      fprintf (stderr,
-	       "\n\
-\n\
-----------------------------------------------------------------------\n\
-Freedroid has encountered a problem in function SwitchBackgroundMusicTo( char* filename ):\n\
-The a SDL MIXER WAS UNABLE TO LOAD A CERTAIN MOD FILE INTO MEMORY.\n\
-\n\
-The name of the problematic file is:\n\
-%s \n\
-\n\
-The SDL says the reason for this would be:\n\
-%s \n\
-\n\
-If the problem persists and you do not find this sound file in the\n\
-Freedroid archive, please inform the developers about the problem.\n\
-\n\
-In the meantime you can choose to play without sound.\n\
-\n\
-If you want this, use the appropriate command line option and Freedroid will \n\
-not complain any more.  But for now Freedroid will terminate to draw attention \n\
-to the sound problem it could not resolve.\n\
-Sorry...\n\
-----------------------------------------------------------------------\n\
-\n" , fpath , Mix_GetError() );
-      Terminate (ERR);
-    } // if ( !Loaded_WAV...
+  // New feature: choose background music by level-color:
+  // if filename_raw==BYCOLOR then chose bg_music[color]
+#define BYCOLOR "BYCOLOR"
+  if (!strcmp( filename_raw, BYCOLOR))
+      MOD_Music_Channel = Mix_PlayMusic (Loaded_MOD_Files[CurLevel->color], -1);
   else
     {
-      DebugPrintf ( 1 , "\nSuccessfully loaded file %s.", fpath );
-    }
+      if (Tmp_MOD_File) Mix_FreeMusic(Tmp_MOD_File);      
+      fpath = find_file (filename_raw, SOUND_DIR, FALSE);    
+      Tmp_MOD_File = Mix_LoadMUS (fpath);
+      if ( Tmp_MOD_File == NULL )
+	{
+	  DebugPrintf (0, "ERROR: Could not load soundfile: %s \n SDL-Error: %s\n", 
+		       fpath , Mix_GetError() );
+	  Terminate (ERR);
+	} // if ( !Loaded_WAV...
+      MOD_Music_Channel = Mix_PlayMusic (Tmp_MOD_File, -1);
+    }      
   
-
-  // MOD_Music_Channel = Mix_PlayMusic ( Loaded_MOD_Files[ Tune ] , -1 );
-  MOD_Music_Channel = Mix_PlayMusic ( Loaded_MOD_Files[ 0 ] , -1 );
-
   Mix_VolumeMusic ( (int) rintf( GameConfig.Current_BG_Music_Volume * MIX_MAX_VOLUME ) );
 
 #endif // HAVE_LIBSDL_MIXER
