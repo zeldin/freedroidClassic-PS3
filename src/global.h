@@ -179,8 +179,8 @@ EXTERN SDL_Surface *InfluDigitSurfacePointer[ DIGITNUMBER ];   // A pointer to t
                                                // influencer in different phases of rotation
 EXTERN SDL_Surface *EnemyDigitSurfacePointer[ DIGITNUMBER ];   // A pointer to the surfaces containing the pictures of the
                                                // influencer in different phases of rotation
-EXTERN SDL_Surface *MapBlockSurfacePointer[ NUM_COLORS ][ NUM_MAP_BLOCKS ];   // A pointer to the surfaces containing the pictures of the
-                                               // influencer in different phases of rotation
+EXTERN SDL_Surface *MapBlockSurfacePointer[ NUM_COLORS ][ NUM_MAP_BLOCKS ];   // A pointer to the surfaces containing the map-pics, which may be rescaled with respect to
+EXTERN SDL_Surface *OrigMapBlockSurfacePointer[ NUM_COLORS ][ NUM_MAP_BLOCKS ];   // A pointer to the surfaces containing the original map-pics as read from disk
 EXTERN char *ship_on_filename;
 EXTERN char *ship_off_filename;
 EXTERN int BannerIsDestroyed;
