@@ -11,7 +11,10 @@
  * $Author$
  *
  * $Log$
- * Revision 1.13  1997-06-09 13:01:29  jprix
+ * Revision 1.14  1997-06-09 19:44:13  jprix
+ * Improved the Title.
+ *
+ * Revision 1.13  1997/06/09 13:01:29  jprix
  * Bullet position and speed now also as float.  Program still functionin. Heeyooh! Great!
  *
  * Revision 1.12  1997/06/08 21:22:44  jprix
@@ -104,7 +107,7 @@ int rate = 8000;
 char BlastSoundSampleFilename[]="/sound/BlastSound1.wav";
 char CollisionSoundSampleFilename[]="/sound/CollisionSound1.wav";
 char FireSoundSampleFilename[]="/sound/FireSound1.wav";
-char BackgroundMusicSampleFilename[]="/sound/BackgroundMusic1.wav";
+// char BackgroundMusicSampleFilename[]="/sound/BackgroundMusic1.wav";
 char* ExpandedBlastSoundSampleFilename;
 char* ExpandedCollisionSoundSampleFilename;
 char* ExpandedFireSoundSampleFilename;
@@ -547,7 +550,8 @@ int Init_YIFF_Sound_Server(void){
   ExpandedBlastSoundSampleFilename=ExpandFilename(BlastSoundSampleFilename);
   ExpandedCollisionSoundSampleFilename=ExpandFilename(CollisionSoundSampleFilename);
   ExpandedFireSoundSampleFilename=ExpandFilename(FireSoundSampleFilename);
-  ExpandedBackgroundMusicSampleFilename=ExpandFilename(BackgroundMusicSampleFilename);
+  //  ExpandedBackgroundMusicSampleFilename=ExpandFilename(BackgroundMusicSampleFilename);
+  ExpandedBackgroundMusicSampleFilename=ExpandFilename( PARADROID_ORIGINAL_TITLE_MUSIC );
 
   // Now a new connection to the yiff server can be opend.  The first argument to open is not NULL,
   // therefore a yiff server will be started even if none is running!!  great!!
