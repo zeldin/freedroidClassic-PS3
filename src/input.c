@@ -37,6 +37,16 @@
 #include "global.h"
 #include "proto.h"
 
+#ifndef SDL_BUTTON_WHEELUP 
+#define SDL_BUTTON_WHEELUP 4
+#endif
+#ifndef SDL_BUTTON_WHEELDOWN
+#define SDL_BUTTON_WHEELDOWN 5
+#endif
+
+int WheelUpEvents=0;    // count number of not read-out wheel events
+int WheelDownEvents=0;
+
 int CurrentlyMouseRightPressed=0;
 SDL_Event event;
 int ShiftWasPressedInAddition=FALSE;
@@ -793,7 +803,15 @@ keyboard_update(void)
 
 	  if (event.button.button == SDL_BUTTON_RIGHT)
 	    CurrentlyMouseRightPressed = TRUE;
-	  
+
+	  // wheel events are immediately released, so we rather
+	  // count the number of not yet read-out events
+	  if (event.button.button == SDL_BUTTON_WHEELUP)
+	    WheelUpEvents ++;
+
+	  if (event.button.button == SDL_BUTTON_WHEELDOWN)
+	    WheelDownEvents ++;
+
 	  break;
 
         case SDL_MOUSEBUTTONUP:
@@ -858,6 +876,33 @@ getchar_raw (void)
 
 } /* getchar_raw() */
 
+// forget the wheel-counters
+void
+ResetMouseWheel (void)
+{
+  WheelUpEvents = WheelDownEvents = 0;
+  return;
+}
+
+int
+WheelUpPressed (void)
+{
+  keyboard_update();
+  if (WheelUpEvents)
+    return (WheelUpEvents--);
+  else
+    return (FALSE);
+}
+
+int
+WheelDownPressed (void)
+{
+  keyboard_update();
+  if (WheelDownEvents)
+    return (WheelDownEvents--);
+  else
+    return (FALSE);
+}
 
 int 
 KP_PLUS_Pressed (void)
