@@ -43,6 +43,9 @@
 #include "colodefs.h"
 #include "SDL_rotozoom.h"
 
+void PutPixel (SDL_Surface * surface, int x, int y, Uint32 pixel);
+int Load_Fonts (void);
+
 /* XPM */
 static const char *arrow[] = {
   /* width height num_colors chars_per_pixel */
@@ -823,6 +826,8 @@ Load_MapBlock_Surfaces( void )
   
   for ( color = 0 ; color < NUM_COLORS ; color ++ )
     {
+      DisplayText (".", -1, -1, NULL);
+      SDL_Flip (ne_screen);
 
       fpath = find_file ( ColoredBlockFiles[ color ] , GRAPHICS_DIR, TRUE);
 
@@ -869,11 +874,22 @@ InitPictures (void)
 
   Block_Width=INITIAL_BLOCK_WIDTH;
   Block_Height=INITIAL_BLOCK_HEIGHT;
-  
+
+  Load_Fonts ();
   // Loading all these pictures might take a while...
   // and we do not want do deal with huge frametimes, which
   // could box the influencer out of the ship....
   Activate_Conservative_Frame_Computation();
+
+  DisplayImage (find_file (NE_TITLE_PIC_FILE, GRAPHICS_DIR, FALSE));
+
+  // FIXME: just TESTING white-noise function here!!
+  //  white_noise (&User_Rect);
+  // FIXME
+
+  SetCurrentFont (FPS_Display_BFont);
+  DisplayText ("Loading Theme config ...", 20, SCREENHEIGHT/3, NULL);
+  SDL_Flip (ne_screen);
 
   // In the following we will be reading in image information.  But the number
   // of images to read in and the way they are displayed might be strongly dependant
@@ -881,6 +897,9 @@ InitPictures (void)
   // theme configuration file again.  After that is done, the following reading
   // commands will do the right thing...
   LoadThemeConfigurationFile();
+
+  DisplayText ("ok", -1, -1, NULL);
+  SDL_Flip (ne_screen);
 
   SDL_SetCursor( init_system_cursor( arrow ) );
 
@@ -915,32 +934,40 @@ InitPictures (void)
    * and initialise the block-coordinates 
    */
 
-  Load_MapBlock_Surfaces();
+  DisplayText ("Loading image data.", 20, SCREENHEIGHT/3+30, NULL);
+  SDL_Flip (ne_screen);
 
-  DebugPrintf( 2 , "\nvoid InitPictures(void): preparing to load droids." );
+  Load_MapBlock_Surfaces();
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
 
   Load_Influencer_Surfaces();
-  Load_Enemy_Surfaces();
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
 
-  DebugPrintf( 2 , "\nvoid InitPictures(void): preparing to load bullet file." );
-  DebugPrintf( 1 , "\nvoid InitPictures(void): Number_Of_Bullet_Types : %d." , Number_Of_Bullet_Types );
+  Load_Enemy_Surfaces();
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
 
   Load_Bullet_Surfaces();
-
-  DebugPrintf( 2 , "\nvoid InitPictures(void): preparing to load blast image file." );
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
 
   Load_Blast_Surfaces();
-
-  DebugPrintf( 2 , "\nvoid InitPictures(void): preparing to load digits image file." );
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
 
   fpath = find_file (NE_DIGIT_BLOCK_FILE, GRAPHICS_DIR, TRUE);
-
   Load_Digit_Surfaces();
 
-  //   ne_digit_block =    ne_get_digit_blocks ( fpath , DIGITNUMBER, DIGITNUMBER, 0, block_line++);
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
 
   fpath = find_file (NE_BANNER_BLOCK_FILE, GRAPHICS_DIR, FALSE);
   ne_rahmen_block = ne_get_rahmen_block (fpath);
+
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
   
   // console picture need not be rendered fast or something.  This
   // really has time, so we load it as a surface and do not take the
@@ -948,9 +975,15 @@ InitPictures (void)
   fpath = find_file (NE_CONSOLEN_PIC_FILE, GRAPHICS_DIR, FALSE);
   ne_console_surface= IMG_Load (fpath); 
 
+  DisplayText (".", -1, -1, NULL);
+  SDL_Flip (ne_screen);
+
   // ne_blocks = SDL_DisplayFormat( ne_blocks );  /* the surface is copied !*/
 
   GetTakeoverGraphics();
+
+  DisplayText ("ok", -1, -1, NULL);
+  SDL_Flip (ne_screen);
   
   return (TRUE);
 }  // InitPictures
@@ -1014,72 +1047,6 @@ Init_Video (void)
   /* clean up on exit */
   atexit (SDL_Quit);
 
-  //--------------------
-  // Now we initialize the fonts needed by BFont functions
-  fpath = find_file (MENU_FONT_FILE, GRAPHICS_DIR, FALSE);
-  if ( ( Menu_BFont = LoadFont (fpath) ) == NULL )
-      {
-      fprintf (stderr,
-	     "\n\
-\n\
-----------------------------------------------------------------------\n\
-Freedroid has encountered a problem:\n\
-A font file named %s it wanted to load was not found.\n\
-\n\
-Please check that the file is present and not corrupted\n\
-in your distribution of Freedroid.\n\
-\n\
-Freedroid will terminate now to point at the error.\n\
-Sorry...\n\
-----------------------------------------------------------------------\n\
-\n" , MENU_FONT_FILE );
-        Terminate(ERR);
-  } else
-  DebugPrintf(1, "\nSDL Menu Font initialisation successful.\n");
-  
-  fpath = find_file (PARA_FONT_FILE, GRAPHICS_DIR, FALSE);
-  if ( ( Para_BFont = LoadFont (fpath) ) == NULL )
-    {
-      fprintf (stderr,
-	     "\n\
-\n\
-----------------------------------------------------------------------\n\
-Freedroid has encountered a problem:\n\
-A font file named %s it wanted to load was not found.\n\
-\n\
-Please check that the file is present and not corrupted\n\
-in your distribution of Freedroid.\n\
-\n\
-Freedroid will terminate now to point at the error.\n\
-Sorry...\n\
-----------------------------------------------------------------------\n\
-\n" , PARA_FONT_FILE );
-      Terminate(ERR);
-    } else
-      DebugPrintf(1, "\nSDL Para Font initialisation successful.\n");
-
-  fpath = find_file (FPS_FONT_FILE, GRAPHICS_DIR, FALSE);
-  if ( ( FPS_Display_BFont = LoadFont (fpath) ) == NULL )
-    {
-      fprintf (stderr,
-	     "\n\
-\n\
-----------------------------------------------------------------------\n\
-Freedroid has encountered a problem:\n\
-A font file named %s it wanted to load was not found.\n\
-\n\
-Please check that the file is present and not corrupted\n\
-in your distribution of Freedroid.\n\
-\n\
-Freedroid will terminate now to point at the error.\n\
-Sorry...\n\
-----------------------------------------------------------------------\n\
-\n" , FPS_FONT_FILE );
-      Terminate(ERR);
-    } else
-      DebugPrintf(1, "\nSDL FPS Display Font initialisation successful.\n");
-
-  //  SetCurrentFont(Menu_BFont);
 
   vid_info = SDL_GetVideoInfo (); /* just curious */
   SDL_VideoDriverName (vid_driver, 80);
@@ -1340,6 +1307,96 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
         break;
     }
 } // void putpixel(...)
+
+
+int 
+Load_Fonts (void)
+{
+  char *fpath;
+
+  fpath = find_file (PARA_FONT_FILE, GRAPHICS_DIR, FALSE);
+  if ( ( Para_BFont = LoadFont (fpath) ) == NULL )
+    {
+      fprintf (stderr,
+	     "\n\
+\n\
+----------------------------------------------------------------------\n\
+Freedroid has encountered a problem:\n\
+A font file named %s it wanted to load was not found.\n\
+\n\
+Please check that the file is present and not corrupted\n\
+in your distribution of Freedroid.\n\
+\n\
+Freedroid will terminate now to point at the error.\n\
+Sorry...\n\
+----------------------------------------------------------------------\n\
+\n" , PARA_FONT_FILE );
+      Terminate(ERR);
+    } else
+      DebugPrintf(1, "\nSDL Para Font initialisation successful.\n");
+
+  Menu_BFont = Para_BFont;
+
+  fpath = find_file (FPS_FONT_FILE, GRAPHICS_DIR, FALSE);
+  if ( ( FPS_Display_BFont = LoadFont (fpath) ) == NULL )
+    {
+      fprintf (stderr,
+	     "\n\
+\n\
+----------------------------------------------------------------------\n\
+Freedroid has encountered a problem:\n\
+A font file named %s it wanted to load was not found.\n\
+\n\
+Please check that the file is present and not corrupted\n\
+in your distribution of Freedroid.\n\
+\n\
+Freedroid will terminate now to point at the error.\n\
+Sorry...\n\
+----------------------------------------------------------------------\n\
+\n" , FPS_FONT_FILE );
+      Terminate(ERR);
+    } else
+      DebugPrintf(1, "\nSDL FPS Display Font initialisation successful.\n");
+
+
+  /* choose a font for highscore displaying... */
+  Highscore_BFont = Para_BFont;
+
+  return (OK);
+} // Load_Fonts ()
+
+//------------------------------------------------------------
+// display "white noise" effect in Rect.
+//------------------------------------------------------------
+void
+white_noise (SDL_Rect *rect)
+{
+  int x, y;
+#define BLACK32 (0x0)
+#define WHITE32 (0xffffff)
+
+  int phase = 0;
+
+  while (!SpacePressed ())
+    {
+
+      if (SDL_MUSTLOCK (ne_screen))
+	SDL_LockSurface (ne_screen);
+
+      for (x = rect->x; x < rect->x + rect->w; x++)
+	for (y = rect->y; y < rect->y + rect->h; y++)
+	  //	  PutPixel (ne_screen, x, y, MyRandom(1) == 1 ? BLACK32 : WHITE32);
+	  PutPixel (ne_screen, x, y, ((x+phase) %2) ? BLACK32 : WHITE32);
+      
+      if (SDL_MUSTLOCK (ne_screen))
+	SDL_UnlockSurface (ne_screen);
+
+      SDL_Flip (ne_screen);
+      phase ++;
+    }
+
+  return;
+}
 
 
 #undef _graphics_c

@@ -651,6 +651,8 @@ DisplayTextWithScrolling (char *Text, int startx, int starty, const SDL_Rect *cl
  *      -> this includes clipping but also automatic line-breaks
  *      when end-of-line is reached
  * 
+ *    if startx/y == -1, write at current position, given by MyCursorX/Y.
+ *
  *      if clip_rect==NULL, no clipping is performed
  *      
  *      NOTE: the previous clip-rectange is restored before

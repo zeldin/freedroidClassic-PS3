@@ -58,9 +58,6 @@ Init_Highscores (void)
       Highscores[i]->mission = -1;
     }
 
-  /* choose a font for highscore displaying... */
-  Highscore_BFont = Para_BFont;
-
   return;
 } /* Init_Highscores */
 

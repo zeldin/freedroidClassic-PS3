@@ -386,11 +386,11 @@ enum
   int MenuPosition=1;
   int key;
   static int NoMissionLoadedEver=TRUE;
-
   Me.status=MENU;
 
   DebugPrintf (2, "\nvoid MissionSelectMenu(void): real function call confirmed."); 
 
+  SetCurrentFont ( Menu_BFont );
   SDL_SetClipRect( ne_screen , NULL );
 
   // Prevent distortion of framerate by the delay coming from 
@@ -401,8 +401,6 @@ enum
   // menu for the player.  Therefore I suggest we just fade out
   // the game screen a little bit.
 
-  SetCurrentFont( Para_BFont );
-  
   while ( EscapePressed() );
 
   while (!Weiter)
@@ -416,7 +414,7 @@ enum
       // influencer to the left before it
       // PutInfluence( FIRST_MENU_ITEM_POS_X , 
       // FIRST_MENU_ITEM_POS_Y + (MenuPosition-1) * (FontHeight(Menu_BFont)) - Block_Width/4 );
-      SetCurrentFont ( Menu_BFont );
+
       PutInfluence( FIRST_MIS_SELECT_ITEM_POS_X , FIRST_MIS_SELECT_ITEM_POS_Y + ( MenuPosition - 1.5 ) * (FontHeight( Menu_BFont )) );
 
       CenteredPutString (ne_screen ,  FIRST_MIS_SELECT_ITEM_POS_Y -2*FontHeight(GetCurrentFont()), "Mission Selection Menu");

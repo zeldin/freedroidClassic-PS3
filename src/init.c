@@ -1156,7 +1156,7 @@ InitFreedroid (void)
 
   GameConfig.WantedTextVisibleTime = 3;
   GameConfig.Draw_Framerate=FALSE;
-  GameConfig.All_Texts_Switch=TRUE;
+  GameConfig.All_Texts_Switch=FALSE;
   GameConfig.Enemy_Hit_Text=FALSE;
   GameConfig.Enemy_Bump_Text=TRUE;
   GameConfig.Enemy_Aim_Text=TRUE;
@@ -1200,6 +1200,7 @@ InitFreedroid (void)
 
   CurLevel = NULL; // please leave this here BEFORE InitPictures
 
+  
   /* Now fill the pictures correctly to the structs */
   if (!InitPictures ())
     {		
