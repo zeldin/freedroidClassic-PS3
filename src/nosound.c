@@ -24,43 +24,33 @@
 
 /*----------------------------------------------------------------------
  *
- * Desc:
+ * Desc:  all sound functions as dummies: for paranosound 
  *
  *----------------------------------------------------------------------*/
-#ifndef _paratext_h
-#define _paratext_h
 
-/* Font Dimensionen */
-#define FONTBREITE 8
-#define FONTHOEHE 12
-#define FONTANZAHL 101
-#define FONTMEM FONTBREITE*FONTHOEHE
-#define ZEILENABSTAND 5
-
-enum _CharLen{
-	SINGLE,
-	DOUBLE
-};
-
-/* ASCII-CODE of RETURN */
-#define RETURN_ASCII 13
-#define BACKSPACE_ASCII 8
-
-/* Cursor-Zeichen: */
-#define CURSOR_ICON 130
-
-enum _font_colors {
-	FONT_YELLOW = 6,
-	FONT_GREEN,
-	FONT_BLUE,
-	FONT_WHITE,
-	FONT_RED,
-	FONT_BLUEGREEN,
-	FONT_BLACK
-};
-
-/* Startfarben */
-#define FIRST_FONT_FG		FONT_GREEN
-#define FIRST_FONT_BG		FONT_BLUE
-
+#ifndef _sound_c
+#define _sound_c
 #endif
+
+#include "defs.h"
+
+void YIFF_Server_Check_Events(void){}
+int Init_YIFF_Sound_Server(void){return(OK);}
+void YIFF_Server_Close_Connections(void){}
+void Play_YIFF_BackgroundMusic(int dummy){}
+void Play_YIFF_Server_Sound(int dummy){}
+void StartSound(int dummy ){}
+void GotHitSound(void){}
+void GotIntoBlastSound(void){}
+void CrySound(void){}
+void RefreshSound(void){}
+void MoveElevatorSound(void){}
+void EnterElevatorSound(void){}
+void LeaveElevatorSound(void){}
+void FireBulletSound(void){}
+void BounceSound(void){}
+int InitModPlayer(void){return(OK);}
+void StopModPlayer(void){}
+void PlayMod(char *modfile){}
+
+#undef _sound_c
