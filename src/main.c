@@ -56,6 +56,7 @@ int
 main (int argc, char *const argv[])
 {
   int i;
+  int now;
 
   GameOver = FALSE;
   QuitProgram = FALSE;
@@ -82,6 +83,10 @@ main (int argc, char *const argv[])
       MissionSelectMenu ( );
       // InitNewMission ( STANDARD_MISSION );
       // InitNewMission ( NEW_MISSION );
+
+      show_droid_info (Me.type, -3);  // show unit-intro page
+      now=SDL_GetTicks();
+      while (  (SDL_GetTicks() - now < SHOW_WAIT) && (!SpacePressed()) );
 
       GameOver = FALSE;
 

@@ -862,13 +862,11 @@ Fill_Rect (SDL_Rect rect, SDL_Color color)
 
 @Ret: none
 * $Function----------------------------------------------------------*/
-
 void
 ShowRobotPicture (int PosX, int PosY, int Number )
 {
   SDL_Surface *tmp;
-  SDL_Rect SourceRectangle;
-  SDL_Rect TargetRectangle;
+  SDL_Rect target;
   char *fpath;
   char fname[500];
 
@@ -899,30 +897,14 @@ Sorry...\n\
 \n" , fpath , SDL_GetError() );
       Terminate (ERR);
     }
-  
 
-  SourceRectangle.x=0;
-  SourceRectangle.y=0;
-  SourceRectangle.w=USERFENSTERBREITE;
-  if ( tmp->w > 200 ) 
-    {
-      SDL_SetClipRect( ne_screen , NULL );
-      TargetRectangle.x=0;
-      TargetRectangle.y=BANNER_HEIGHT;
-      SourceRectangle.h=SCREENHEIGHT-BANNER_HEIGHT;
-    }
-  else 
-    {
-      TargetRectangle.x=USERFENSTERPOSX;
-      TargetRectangle.y=USERFENSTERPOSY + TEXT_STRETCH * FontHeight(Menu_BFont) ;
-      SourceRectangle.h=USERFENSTERHOEHE;
-    }
+  SDL_SetClipRect( ne_screen , NULL );
+  Set_Rect (target, PosX, PosY, SCREENLEN, SCREENHEIGHT);
+  SDL_BlitSurface( tmp , NULL, ne_screen , &target);
 
-  SDL_BlitSurface( tmp , &SourceRectangle, ne_screen , &TargetRectangle );
-  
   SDL_FreeSurface(tmp);
 
   DebugPrintf (2, "\nvoid ShowRobotPicture(...): Usual end of function reached.");
-}				// void ShowRobotPicture(...)
+}; // void ShowRobotPicture ( ... )
 
 #undef _view_c

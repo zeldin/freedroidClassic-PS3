@@ -159,7 +159,16 @@ Takeover (int enemynum)
 
   Me.status = MOBILE; /* the new status _after_ the takeover game */
 
-  //  SetPalCol (INFLUENCEFARBWERT, Mobilecolor.rot, Mobilecolor.gruen,Mobilecolor.blau);
+
+  show_droid_info ( Me.type, -1 );
+  while ( !SpacePressed() );
+  while ( SpacePressed() );
+  
+
+  show_droid_info ( AllEnemys[enemynum].type, -2 );
+  while ( !SpacePressed() );
+  while ( SpacePressed() );
+
 
   while (!FinishTakeover)
     {
