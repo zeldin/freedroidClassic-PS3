@@ -6,7 +6,7 @@
 
 #include "BFont.h"
 #include "system.h"
-
+#include "proto.h"
 
 /* Current font */
 BFont_Info *CurrentFont;
@@ -651,9 +651,9 @@ GetPixel (SDL_Surface * Surface, Sint32 X, Sint32 Y)
   Uint32 Bpp;
 
   if (X < 0)
-    puts ("x too small in GetPixel!");
+    DebugPrintf (2, "x too small in GetPixel!");
   if (X >= Surface->w)
-    puts ("x too big in GetPixel!");
+    DebugPrintf (2, "x too big in GetPixel!");
 
   Bpp = Surface->format->BytesPerPixel;
 
