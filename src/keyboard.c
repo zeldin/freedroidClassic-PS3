@@ -1,47 +1,45 @@
+/*----------------------------------------------------------------------
+ *
+ * Desc: encapsulation functions for keyboard handling
+ *
+ *----------------------------------------------------------------------*/
+
 /* 
  *
  *   Copyright (c) 1994, 2002 Johannes Prix
  *   Copyright (c) 1994, 2002 Reinhard Prix
  *
  *
- *  This file is part of FreeDroid
+ *  This file is part of Freedroid
  *
- *  FreeDroid is free software; you can redistribute it and/or modify
+ *  Freedroid is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  FreeDroid is distributed in the hope that it will be useful,
+ *  Freedroid is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with FreeDroid; see the file COPYING. If not, write to the 
+ *  along with Freedroid; see the file COPYING. If not, write to the 
  *  Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
  *  MA  02111-1307  USA
  *
  */
-
-/*----------------------------------------------------------------------
- *
- * Desc: functions to make keyboard access via svgalib somewhat easyer.
- *
- *----------------------------------------------------------------------*/
-#include <config.h>
-
 #define _keyboard_c
 
-#undef DIAGONAL_KEYS_AUS
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "system.h"
 
 #include "defs.h"
 #include "struct.h"
 #include "global.h"
 #include "proto.h"
+
+
+#undef DIAGONAL_KEYS_AUS
+
 
 SDL_Event event;
 int CurrentlyEnterPressed=0;
@@ -82,7 +80,7 @@ int CurrentlyBackspacePressed=0;
 void 
 Init_SDL_Keyboard(void)
 {
-  
+  return;  
 }
 
 int 
@@ -346,6 +344,41 @@ keyboard_update(void)
   return 0;
 }
 
+/*-----------------------------------------------------------------
+ * Desc: should do roughly what getchar() does, but in raw 
+ * 	 (SLD) keyboard mode. 
+ * 
+ * Return: the (SDLKey) of the next key-pressed event cast to (int)
+ *
+ *-----------------------------------------------------------------*/
+int
+getchar_raw (void)
+{
+  SDL_Event event;
+
+  keyboard_update ();   /* treat all pending keyboard-events */
+
+  while (1)
+    {
+      SDL_WaitEvent (&event);    /* wait for next event */
+      
+      if (event.type == SDL_KEYDOWN)
+	/* 
+	 * here we use the fact that, I cite from SDL_keyboard.h:
+	 * "The keyboard syms have been cleverly chosen to map to ASCII"
+	 * ... I hope that this design feature is portable, and durable ;)  
+	 */
+	return ((int) event.key.keysym.sym);
+      else
+	continue;
+
+    } /* while(1) */
+
+} /* getchar_raw() */
+
+
+/*-----------------------------------------------------------------
+ *-----------------------------------------------------------------*/
 void
 ClearKbState (void)
 {
