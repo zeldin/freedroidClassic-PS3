@@ -9,7 +9,10 @@
  * $Author$
  *
  * $Log$
- * Revision 1.3  1997-06-08 18:46:11  jprix
+ * Revision 1.4  1997-06-08 23:19:38  jprix
+ * Transition to floating point coordinates started.  This version is still working.
+ *
+ * Revision 1.3  1997/06/08 18:46:11  jprix
  * Sound server should be working perfectly now.  Background music was also activated.
  * Background music file and new fire sound added.
  * Soundserver is currently activated by default. (rp shound install a yiff soon! it's great.)
@@ -85,7 +88,7 @@ char TitleText3[]="An Influence Device can transmitt\nconsole. A small-scale pla
 //                                                                           jp, 10.04.2002
 //
 
-int AutoTerminationTime=60;
+int AutoTerminationTime=120;
 
 // static void timeout(int sig);
 
