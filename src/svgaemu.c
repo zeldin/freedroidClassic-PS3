@@ -45,13 +45,16 @@
 // SDL_Surface *screen;
 // SDL_Surface *ScaledSurface;
 
-/*
- * Set the pixel at (x, y) to the given value
- * NOTE: The surface must be locked before calling this!
- */
+/*-----------------------------------------------------------------
+ * please document !!
+ * 
+ *-----------------------------------------------------------------*/
 void 
 PrepareScaledSurface(int With_Screen_Update)
 {
+#ifdef NEW_ENGINE
+  return;
+#else
   int bpp;
   int i,j;
   unsigned char *s;
@@ -59,16 +62,10 @@ PrepareScaledSurface(int With_Screen_Update)
   unsigned char *pSecond;
   unsigned char pix;
 
-  DebugPrintf("\n\nvoid PrepareScaledSurface(void):  New function call confirmed...");
-
   Lock_SDL_Screen();
   SDL_LockSurface( ScaledSurface );
 
-  DebugPrintf("\n\nvoid PrepareScaledSurface(void):  Screens are locked...");
-
   bpp  = screen->format->BytesPerPixel;
-
-  DebugPrintf("\n\nvoid PrepareScaledSurface(void):  bpp have been determined...");
 
   /* Here s is the address to the pixel source */
   // s = (Uint8 *)screen->pixels;
@@ -84,13 +81,12 @@ PrepareScaledSurface(int With_Screen_Update)
       switch ( SCALE_FACTOR ) 
 	{
 	case 1:
-
-	  printf("\n\nvoid PrepareScaledSurface(): Unhandled SCALE_FACTOR...\n\nTerminating...\n\n");
+	  printf
+	    ("\n\nPrepareScaledSurface(): Unhandled SCALE_FACTOR...\n");
 	  Terminate(ERR);
 	  break;
 
 	case 2:
-
 	  for (j=0; j<SCREENHOEHE; j++)
 	    {
 	      for (i=0; i<SCREENBREITE; i++)
@@ -115,64 +111,60 @@ PrepareScaledSurface(int With_Screen_Update)
 	  break;
 
 	case 3:
-
-	  printf("\n\nvoid PrepareScaledSurface(): Unhandled SCALE_FACTOR...\n\nTerminating...\n\n");
+	  printf("\n\nPrepareScaledSurface(): Unhandled SCALE_FACTOR...\n");
 	  Terminate(ERR);
 	  break;
-
+	  
 	default:
-
-	  printf("\n\nvoid PrepareScaledSurface(): Unhandled SCALE_FACTOR...\n\nTerminating...\n\n");
+	  printf("\n\nPrepareScaledSurface(): Unhandled SCALE_FACTOR...\n");
 	  Terminate(ERR);
-
 	  break;
-	}
-
+	} /* switch (SCALE_FACTOR) */
+      
       break;
       
     case 2:
-
-      printf("\n\nvoid PrepareScaledSurface(void):  Unhandled bpp!...\n\n Terminating...\n\n");
+      printf("\n\nPrepareScaledSurface(void): Unhandled bpp!...\n");
       Terminate(ERR);
       break;
       
     case 3:
-
-      printf("\n\nvoid PrepareScaledSurface(void):  Unhandled bpp!...\n\n Terminating...\n\n");
+      printf("\n\nPrepareScaledSurface(void):  Unhandled bpp!...\n");
       Terminate(ERR);
       break;
       
     case 4:
-
-      printf("\n\nvoid PrepareScaledSurface(void):  Unhandled bpp!...\n\n Terminating...\n\n");
+      printf("\n\nPrepareScaledSurface(void):  Unhandled bpp!...\n");
       Terminate(ERR);
       break;
-
-    }
-
-  DebugPrintf("\n\nvoid PrepareScaledSurface(void):  Memory has been copied...");
+    } /* switch (bpp) */
 
   Unlock_SDL_Screen();
   SDL_UnlockSurface( ScaledSurface );
 
-  DebugPrintf("\n\nvoid PrepareScaledSurface(void):  Screens have been unlocked again...");
-
   if (Draw_Framerate)
-    {
-      PrintStringFont (ScaledSurface , Font1, 0, RAHMENHOEHE*2 , "FPS: %d", 
-		       5*(int)(rintf(0.2/Frame_Time())) );
-    }
+    PrintStringFont (ScaledSurface , Font1, 0, RAHMENHOEHE*2 , "FPS: %d", 
+		     5*(int)(rintf(0.2/Frame_Time())) );
+
 
   if (With_Screen_Update) Update_SDL_Screen();
 
-  DebugPrintf("\n\nvoid PrepareScaledSurface(void):  End of function has been reached...");
 
-} // void PrepareScaledSurface(void)
+  return;
+#endif // !NEW_ENGINE
+} // PrepareScaledSurface()
 
 
+/*-----------------------------------------------------------------
+ * 
+ * 
+ *-----------------------------------------------------------------*/
 void 
 Lock_SDL_Screen(void)
 {
+#ifdef NEW_ENGINE
+  return;
+#else
   /* Lock the screen for direct access to the pixels */
   if ( SDL_MUSTLOCK(screen) ) {
     if ( SDL_LockSurface(screen) < 0 ) {
@@ -180,22 +172,31 @@ Lock_SDL_Screen(void)
       return;
     }
   }
-} // void Lock_SDL_Screen
+#endif
+} // Lock_SDL_Screen ()
 
 void
 Unlock_SDL_Screen(void)
 {
+#ifdef NEW_ENGINE
+  return;
+#else
   if ( SDL_MUSTLOCK(screen) ) {
     SDL_UnlockSurface(screen);
   }
+#endif
 } // void Unlock_SDL_Screen
 
 void
 Update_SDL_Screen(void)
 {
+#ifdef NEW_ENGINE
+  return;
+#else
   /* Update just the part of the display that we've changed */
   // SDL_UpdateRect( screen , 0, 0, SCREENBREITE, SCREENHOEHE);
   SDL_UpdateRect(ScaledSurface, 0, 0, SCREENBREITE*SCALE_FACTOR, SCREENHOEHE*SCALE_FACTOR);
+#endif
 } // void Update_SDL_Screen
 
 /*
@@ -269,370 +270,5 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
         break;
     }
 } // void putpixel(...)
-
-void 
-gl_printf(int x, int y, const char *fmt,...)
-{
-  return;
-}
-
-void gl_expandfont(int fw, int fh, int c, void *sfdp, void *dfdp)
-{
-
-}
-
-void gl_setfont(int fw, int fh, void *fdp)
-{
-
-}
-
-void gl_colorfont(int fw, int fh, int c, void *fdp)
-{
-
-}
-
-void gl_setwritemode(int wm)
-{
-
-}
-
-void gl_write(int x, int y, char *s)
-{
-
-}
-
-void gl_writen(int x, int y, int n, char *s)
-{
-
-}
-
-void gl_setfontcolors(int bg, int fg)
-{
-
-}
-
-void gl_setpalettecolor(int c, int r, int b, int g)
-{
-
-}
-
-void gl_getpalettecolor(int c, int *r, int *b, int *g)
-{
-
-}
-
-void gl_setpalettecolors(int s, int n, void *dp)
-{
-
-}
-
-void gl_getpalettecolors(int s, int n, void *dp)
-{
-
-}
-
-void 
-gl_setpalette(void *p)
-{
-
-}
-
-void gl_getpalette(void *p)
-{
-
-}
-
-void gl_setrgbpalette(void)
-{
-
-}
-
-void gl_clearscreen(int c)
-{
-
-}
-
-void gl_scalebox(int w1, int h1, void *sb, int w2, int h2, void *db)
-{
-
-}
-
-void gl_setdisplaystart(int x, int y)
-{
-
-}
-
-void gl_enableclipping(void)
-{
-
-}
-
-void gl_setclippingwindow(int x1, int y1, int x2, int y2)
-{
-
-}
-
-void gl_disableclipping(void)
-{
-
-}
-
-void gl_putbox(int x, int y, int w, int h, void *dp)
-{
-
-}
-
-int gl_setcontextvga(int m)
-{
-  return (OK);
-}
-
-void gl_hline(int x1, int y, int x2, int c)
-{
-
-}
-
-
-int keyboard_init(void)
-{
-  return 0;
-}
-
-int keyboard_init_return_fd(void)
-{
-  return 0;
-}
-
-void keyboard_close(void)
-{
-
-}
-
-void keyboard_setdefaulteventhandler(void)
-{
-
-}
-
-char *keyboard_getstate(void)
-{
-  return NULL;
-}
-
-void keyboard_clearstate(void)
-{
-
-}
-
-void keyboard_translatekeys(int mask)
-{
-
-}
-
-int keyboard_keypressed(int scancode)
-{
-  return 0;
-}
-
-int vga_setmode(int mode)
-{
-  Uint32 flags;  /* flags for SDL video mode */
-
-  flags = SDL_SWSURFACE | SDL_HWPALETTE ;
-  if (fullscreen_on) flags |= SDL_FULLSCREEN;
-
-  SDL_WM_SetCaption("Freedroid", "");
-  SDL_WM_SetIcon(SDL_LoadBMP("../graphics/paraicon.bmp"), NULL);
-
-  /* Open the display device */
-  // screen = SDL_SetVideoMode(320, 200, 0, SDL_SWSURFACE|SDL_FULLSCREEN|SDL_HWPALETTE );
-  // screen = SDL_SetVideoMode(320, 200, 0, SDL_SWSURFACE|SDL_FULLSCREEN );
-  // screen = SDL_SetVideoMode(320 , 200, 8, SDL_SWSURFACE | SDL_HWPALETTE );
-  ScaledSurface = SDL_SetVideoMode(320*2 , 200*2, 8, flags);
-  // ScaledSurface = SDL_SetVideoMode(320*2 , 200*2, 8, SDL_SWSURFACE | SDL_HWPALETTE | SDL_RESIZABLE | SDL_FULLSCREEN );
-  if ( ScaledSurface == NULL ) {
-    fprintf(stderr, "Couldn't set 320x200 video mode: %s\n",
-	    SDL_GetError());
-    exit(2);
-  }
-
-  // SDL_SetGamma( 1.4 , 2.5 , 2.5 );
-  SDL_SetGamma( 2 , 2 , 2 );
-  Current_Gamma_Correction=2;
-
-  // SDL_CreateRGBSurface( SDL_SWSURFACE , 640, 480, 8, screen->Rmask, screen->Gmask, screen->Bmask, screen->Amask);
-  screen = SDL_CreateRGBSurface( SDL_SWSURFACE , 320, 200, 8, 0, 0, 0, 0 );
-
-  /*
-  if ( SDL_SetColorKey(screen, 0xFFFFFFFF, 254) == (-1) )
-    {
-      printf("\n\nint vga_setmode(int mode): ERROR in SDL_SetColorKey.\n\nTerminating...\n\n");
-      Terminate(ERR);
-    }
-  */
-
-  return (OK);
-}
-
-int vga_hasmode(int mode)
-{
-  return 1;
-}
-
-int vga_setflipchar(int c)
-{
-  return 1;
-}
-
-
-int vga_clear(void)
-{
-  return 1;
-}
-
-int vga_flip(void)
-{
-  return 1;
-
-}
-
-
-int vga_getxdim(void)
-{
-  return 1;
-
-}
-
-int vga_getydim(void)
-{
-  return 1;
-
-}
-
-int vga_getcolors(void)
-{
-  return 1;
-
-}
-
-
-int vga_setpalette(int index, int red, int green, int blue)
-{
-  return 1;
-
-}
-
-int vga_getpalette(int index, int *red, int *green, int *blue)
-{
-  return 1;
-
-}
-
-int vga_setpalvec(int start, int num, int *pal)
-{
-  return 1;
-}
-
-int vga_getpalvec(int start, int num, int *pal)
-{
-  return 1;
-}
-
-
-int vga_screenoff(void)
-{
-  return 1;
-}
-
-int vga_screenon(void)
-{
-  return 1;
-}
-
-
-int vga_setcolor(int color)
-{
-  return 1;
-}
-
-// int vga_drawpixel(int x, int y)
-//{
-//   return 1;
-// }
-
-int vga_drawline(int x1, int y1, int x2, int y2)
-{
-  return 1;
-}
-
-int vga_drawscanline(int line, unsigned char *colors)
-{
-  return 1;
-}
-
-int vga_drawscansegment(unsigned char *colors, int x, int y, int length)
-{
-  return 1;
-}
-
-// int vga_getpixel(int x, int y)
-// {
-//   return 1;
-// }
-
-int vga_getscansegment(unsigned char *colors, int x, int y, int length)
-{
-  return 1;
-}
-
-
-int vga_getch(void)
-{
-  return 1;
-}
-
-
-int vga_dumpregs(void)
-{
-  return 1;
-}
-
-int 
-vga_init(void)
-{
-  /* Initialize the SDL library */
-  if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) 
-    {
-      fprintf(stderr, "Couldn't initialize SDL: %s\n",SDL_GetError());
-      Terminate(ERR);
-    } else
-      printf("\nSDL Video initialisation successful.");
-      
-
-  if ( ( Font1 = LoadFont("../graphics/font01.png") ) == NULL )
-    {
-      fprintf(stderr, "\n\nCouldn't initialize Font.\n\nTerminating...\n\n");
-      Terminate(ERR);
-    } else
-      printf("\nSDL Font initialisation successful.");
-  return 0;
-}
-
-int 
-vga_white(void)
-{
-  return 0;
-}
-
-void 
-vga_waitretrace(void)
-{
-
-};
-    
-int 
-vga_getdefaultmode(void)
-{
-  return 0;
-};
 
 #undef _svgaemu_c
