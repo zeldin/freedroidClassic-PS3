@@ -18,9 +18,6 @@ ALTERNATIVELY:
 3)b) you can run the game locally by typing: 
    `cd src' followed by `./freedroid'
 
-If you don't have sound or SDL-sound installed, you might have to run
-freedroid with the command-line option `-q'.
-
 Have fun!
 Reinhard
 
