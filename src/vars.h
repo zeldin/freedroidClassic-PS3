@@ -32,11 +32,15 @@
 
 #include "colodefs.h"
 #include "ship.h"
-// this defines our "Userfenster"
-// const SDL_Rect User_Rect = { USERFENSTERPOSX, USERFENSTERPOSY, USERFENSTERBREITE, USERFENSTERHOEHE };
-SDL_Rect User_Rect = { USERFENSTERPOSX, USERFENSTERPOSY, USERFENSTERBREITE, USERFENSTERHOEHE };
 
-SDL_Rect Full_Screen_Rect = { 0, 0, SCREENLEN, SCREENHEIGHT };
+// this defines our "Userfenster"
+SDL_Rect User_Rect = {0, 0, 0, 0};
+const SDL_Rect Classic_User_Rect = {USERFENSTERPOSX, USERFENSTERPOSY, 
+			     USERFENSTERBREITE, USERFENSTERHOEHE };
+const SDL_Rect Full_User_Rect = {0, BANNER_HEIGHT, 640, 480 - BANNER_HEIGHT};
+
+
+const SDL_Rect Full_Screen_Rect = { 0, 0, SCREENLEN, SCREENHEIGHT };
 
 /*
 const SDL_Rect Menu_Rect = {MENUTEXT_X, USERFENSTERPOSY,

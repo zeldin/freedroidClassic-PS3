@@ -75,6 +75,7 @@ typedef struct
   int StandardInfluencerMessages_On_Off;
   int Mouse_Input_Permitted;
   char* Theme_SubPath;
+  int FullUserRect;   // use "full" or "classic" (=small) User_Rect
 }
 configuration_for_freedroid , *Configuration_for_freedroid;
 
