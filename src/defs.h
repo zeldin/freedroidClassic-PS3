@@ -10,7 +10,10 @@
  * $Author$
  *
  * $Log$
- * Revision 1.17  1997-06-09 19:44:13  jprix
+ * Revision 1.18  1997-06-09 23:08:58  jprix
+ * Blast phases now adapted to the current framerate.  New constant for speed of animation independant of framerate.
+ *
+ * Revision 1.17  1997/06/09 19:44:13  jprix
  * Improved the Title.
  *
  * Revision 1.16  1997/06/09 18:01:51  jprix
@@ -349,6 +352,7 @@ enum _status {
 /* Dimension eines Blasts */
 #define BLASTRADIUS		BLOCKBREITE/3
 #define BLASTDAMAGE		5
+#define BLASTPHASES_PER_SECOND  15
 
 #define DECKCOMPLETEBONUS 500
 
