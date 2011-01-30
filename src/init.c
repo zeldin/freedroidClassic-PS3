@@ -909,7 +909,11 @@ InitFreedroid (int argc, char *const argv[])
 
   sprintf (GameConfig.Theme_Name, "classic");
   GameConfig.FullUserRect = TRUE;
+#ifdef __PPU__
+  GameConfig.UseFullscreen = TRUE;
+#else
   GameConfig.UseFullscreen = FALSE;
+#endif
   GameConfig.TakeoverActivates = TRUE;  
   GameConfig.ShowDecals = TRUE;
   GameConfig.AllMapVisible = TRUE;    // classic setting: map always visible
