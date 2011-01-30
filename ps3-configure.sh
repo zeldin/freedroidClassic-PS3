@@ -14,4 +14,5 @@ export LDFLAGS
 export CFLAGS
 export PATH
 
-"$srcdir"/configure --host=ppu --without-x
+"$srcdir"/configure --host=ppu --without-x --datarootdir=/dev_hdd0/game/FDROID001/USRDIR
+
