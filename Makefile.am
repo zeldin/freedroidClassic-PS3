@@ -45,11 +45,11 @@ PKG_CONTENTID	= UP0001-$(PKG_APPID)_00-0000000000000000
 PKG_ICON0	= $(srcdir)/ICON0.PNG
 PKG_SFOXML	= $(PSL1GHT_BIN)/sfo.xml
 
-CLEANFILES = freedroid.pkg freedroid.self
+CLEANFILES = freedroid.pkg freedroid.elf freedroid.self
 
 pkg_dir = ps3-pkg
 
-freedroid.pkg: src/freedroid $(addprefix $(srcdir)/,$(EXTRA_DIST))
+freedroid.pkg: freedroid.elf $(addprefix $(srcdir)/,$(EXTRA_DIST))
 	mkdir -p $(pkg_dir)
 	mkdir -p $(pkg_dir)/USRDIR
 	cp $(PKG_ICON0) $(pkg_dir)/
@@ -62,9 +62,9 @@ freedroid.pkg: src/freedroid $(addprefix $(srcdir)/,$(EXTRA_DIST))
 run: freedroid.self
 	$(PSL1GHT_BIN)/ps3load $<
 
-freedroid.self: src/freedroid
-	ppu-strip $< -o freedroid.tmp
-	$(PSL1GHT_BIN)/sprxlinker freedroid.tmp
-	$(PSL1GHT_BIN)/fself.py freedroid.tmp $@
-	-rm freedroid.tmp
+freedroid.self: freedroid.elf
+	$(PSL1GHT_BIN)/fself.py $< $@
 
+freedroid.elf: src/freedroid
+	ppu-strip $< -o freedroid.elf
+	$(PSL1GHT_BIN)/sprxlinker freedroid.elf
