@@ -63,6 +63,13 @@
 // ----------------------------------------
 // some input-related defines and macros
 
+#if SDL_VERSION_ATLEAST(1,3,0)
+#define SDLK_LAST SDL_SCANCODE_TO_KEYCODE(SDL_NUM_SCANCODES)
+#define KEY_PACK(n) (((n)&SDLK_SCANCODE_MASK)?((n)&~SDLK_SCANCODE_MASK)+128:((n)<128?(n):SDLK_UNKNOWN))
+#else
+#define KEY_PACK(n) (n)
+#endif
+
 enum  _pointer_states {
   MOUSE_UP = SDLK_LAST+1,
   MOUSE_RIGHT,

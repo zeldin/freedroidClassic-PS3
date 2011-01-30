@@ -41,7 +41,7 @@
 
 extern int key_cmds[CMD_LAST][3]; 
 extern char *cmd_strings[CMD_LAST];
-extern char *keystr[INPUT_LAST];
+extern char *keystr[KEY_PACK(INPUT_LAST)];
 
 #define HIGHLIGHTCOLOR 255
 #define HIGHLIGHTCOLOR2 100
@@ -385,9 +385,9 @@ Display_Key_Config (int selx, int sely)
   for (i=0; i < CMD_LAST; i++)
     {
       PrintStringFont (ne_screen, Font0_BFont, startx, starty+(posy)*fheight, cmd_strings[i]);
-      PrintStringFont (ne_screen, PosFont(1,2+i), col1, starty+(posy)*fheight, keystr[key_cmds[i][0]]);
-      PrintStringFont (ne_screen, PosFont(2,2+i), col2, starty+(posy)*fheight, keystr[key_cmds[i][1]]);
-      PrintStringFont (ne_screen, PosFont(3,2+i), col3, starty+(posy)*fheight, keystr[key_cmds[i][2]]);
+      PrintStringFont (ne_screen, PosFont(1,2+i), col1, starty+(posy)*fheight, keystr[KEY_PACK(key_cmds[i][0])]);
+      PrintStringFont (ne_screen, PosFont(2,2+i), col2, starty+(posy)*fheight, keystr[KEY_PACK(key_cmds[i][1])]);
+      PrintStringFont (ne_screen, PosFont(3,2+i), col3, starty+(posy)*fheight, keystr[KEY_PACK(key_cmds[i][2])]);
       posy ++;
     }
   

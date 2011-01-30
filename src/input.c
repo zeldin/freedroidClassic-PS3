@@ -57,7 +57,7 @@ SDLMod current_modifiers;
 
 SDL_Event event;
 
-int input_state[INPUT_LAST];	// array of states (pressed/released) of all keys
+int input_state[KEY_PACK(INPUT_LAST)];	// array of states (pressed/released) of all keys
 
 int key_cmds[CMD_LAST][3] =  // array of mappings {key1,key2,key3 -> cmd}
   {
@@ -73,7 +73,7 @@ int key_cmds[CMD_LAST][3] =  // array of mappings {key1,key2,key3 -> cmd}
     {SDLK_F12, SDLK_F12, SDLK_F12 }  		// CMD_SCREENSHOT
   };
 
-char *keystr[INPUT_LAST];
+char *keystr[KEY_PACK(INPUT_LAST)];
 
 char *cmd_strings[CMD_LAST] = 
   {
@@ -104,167 +104,167 @@ char *cmd_strings[CMD_LAST] =
 void
 init_keystr (void)
 {
-  keystr[SDLK_BACKSPACE] = "BS";
-  keystr[SDLK_TAB]	= "Tab";
-  keystr[SDLK_CLEAR]	= "Clear";
-  keystr[SDLK_RETURN]	= "Return";
-  keystr[SDLK_PAUSE]	= "Pause";
-  keystr[SDLK_ESCAPE]	= "Esc";
-  keystr[SDLK_SPACE]	= "Space";
-  keystr[SDLK_EXCLAIM]	= "!";
-  keystr[SDLK_QUOTEDBL]	= "\"";
-  keystr[SDLK_HASH]	= "#";
-  keystr[SDLK_DOLLAR]	= "$";
-  keystr[SDLK_AMPERSAND]= "&";
-  keystr[SDLK_QUOTE]	= "'";
-  keystr[SDLK_LEFTPAREN]= "(";
-  keystr[SDLK_RIGHTPAREN]=")";
-  keystr[SDLK_ASTERISK]	= "*";
-  keystr[SDLK_PLUS]	= "+";
-  keystr[SDLK_COMMA]	= ",";
-  keystr[SDLK_MINUS]	= "-";
-  keystr[SDLK_PERIOD]	= ".";
-  keystr[SDLK_SLASH]	= "/";
-  keystr[SDLK_0]	= "0";	
-  keystr[SDLK_1]	= "1";
-  keystr[SDLK_2]	= "2";
-  keystr[SDLK_3]	= "3";
-  keystr[SDLK_4]	= "4";
-  keystr[SDLK_5]	= "5";
-  keystr[SDLK_6]	= "6";
-  keystr[SDLK_7]	= "7";
-  keystr[SDLK_8]	= "8";
-  keystr[SDLK_9]	= "9";
-  keystr[SDLK_COLON]	= ":";
-  keystr[SDLK_SEMICOLON]= ";";
-  keystr[SDLK_LESS]	= "<";
-  keystr[SDLK_EQUALS]	= "=";
-  keystr[SDLK_GREATER]	= ">";
-  keystr[SDLK_QUESTION]	= "?";
-  keystr[SDLK_AT]	= "@";
-  keystr[SDLK_LEFTBRACKET]	= "[";
-  keystr[SDLK_BACKSLASH]	= "\\";
-  keystr[SDLK_RIGHTBRACKET]	= "]";
-  keystr[SDLK_CARET]	= "^";
-  keystr[SDLK_UNDERSCORE]	= "_";
-  keystr[SDLK_BACKQUOTE]	= "`";
-  keystr[SDLK_a]	= "a";
-  keystr[SDLK_b]	= "b";
-  keystr[SDLK_c]	= "c";
-  keystr[SDLK_d]	= "d";
-  keystr[SDLK_e]	= "e";
-  keystr[SDLK_f]	= "f";
-  keystr[SDLK_g]	= "g";
-  keystr[SDLK_h]	= "h";
-  keystr[SDLK_i]	= "i";
-  keystr[SDLK_j]	= "j";
-  keystr[SDLK_k]	= "k";
-  keystr[SDLK_l]	= "l";
-  keystr[SDLK_m]	= "m";
-  keystr[SDLK_n]	= "n";
-  keystr[SDLK_o]	= "o";
-  keystr[SDLK_p]	= "p";
-  keystr[SDLK_q]	= "q";
-  keystr[SDLK_r]	= "r";
-  keystr[SDLK_s]	= "s";
-  keystr[SDLK_t]	= "t";
-  keystr[SDLK_u]	= "u";
-  keystr[SDLK_v]	= "v";
-  keystr[SDLK_w]	= "w";
-  keystr[SDLK_x]	= "x";
-  keystr[SDLK_y]	= "y";
-  keystr[SDLK_z]	= "z";
-  keystr[SDLK_DELETE]	= "Del";
+  keystr[KEY_PACK(SDLK_BACKSPACE)]	= "BS";
+  keystr[KEY_PACK(SDLK_TAB)]		= "Tab";
+  keystr[KEY_PACK(SDLK_CLEAR)]		= "Clear";
+  keystr[KEY_PACK(SDLK_RETURN)]		= "Return";
+  keystr[KEY_PACK(SDLK_PAUSE)]		= "Pause";
+  keystr[KEY_PACK(SDLK_ESCAPE)]		= "Esc";
+  keystr[KEY_PACK(SDLK_SPACE)]		= "Space";
+  keystr[KEY_PACK(SDLK_EXCLAIM)]	= "!";
+  keystr[KEY_PACK(SDLK_QUOTEDBL)]	= "\"";
+  keystr[KEY_PACK(SDLK_HASH)]		= "#";
+  keystr[KEY_PACK(SDLK_DOLLAR)]		= "$";
+  keystr[KEY_PACK(SDLK_AMPERSAND)]	= "&";
+  keystr[KEY_PACK(SDLK_QUOTE)]		= "'";
+  keystr[KEY_PACK(SDLK_LEFTPAREN)]	= "(";
+  keystr[KEY_PACK(SDLK_RIGHTPAREN)]	=")";
+  keystr[KEY_PACK(SDLK_ASTERISK)]	= "*";
+  keystr[KEY_PACK(SDLK_PLUS)]		= "+";
+  keystr[KEY_PACK(SDLK_COMMA)]		= ",";
+  keystr[KEY_PACK(SDLK_MINUS)]		= "-";
+  keystr[KEY_PACK(SDLK_PERIOD)]		= ".";
+  keystr[KEY_PACK(SDLK_SLASH)]		= "/";
+  keystr[KEY_PACK(SDLK_0)]		= "0";	
+  keystr[KEY_PACK(SDLK_1)]		= "1";
+  keystr[KEY_PACK(SDLK_2)]		= "2";
+  keystr[KEY_PACK(SDLK_3)]		= "3";
+  keystr[KEY_PACK(SDLK_4)]		= "4";
+  keystr[KEY_PACK(SDLK_5)]		= "5";
+  keystr[KEY_PACK(SDLK_6)]		= "6";
+  keystr[KEY_PACK(SDLK_7)]		= "7";
+  keystr[KEY_PACK(SDLK_8)]		= "8";
+  keystr[KEY_PACK(SDLK_9)]		= "9";
+  keystr[KEY_PACK(SDLK_COLON)]		= ":";
+  keystr[KEY_PACK(SDLK_SEMICOLON)]	= ";";
+  keystr[KEY_PACK(SDLK_LESS)]		= "<";
+  keystr[KEY_PACK(SDLK_EQUALS)]		= "=";
+  keystr[KEY_PACK(SDLK_GREATER)]	= ">";
+  keystr[KEY_PACK(SDLK_QUESTION)]	= "?";
+  keystr[KEY_PACK(SDLK_AT)]		= "@";
+  keystr[KEY_PACK(SDLK_LEFTBRACKET)]	= "[";
+  keystr[KEY_PACK(SDLK_BACKSLASH)]	= "\\";
+  keystr[KEY_PACK(SDLK_RIGHTBRACKET)]	= "]";
+  keystr[KEY_PACK(SDLK_CARET)]		= "^";
+  keystr[KEY_PACK(SDLK_UNDERSCORE)]	= "_";
+  keystr[KEY_PACK(SDLK_BACKQUOTE)]	= "`";
+  keystr[KEY_PACK(SDLK_a)]		= "a";
+  keystr[KEY_PACK(SDLK_b)]		= "b";
+  keystr[KEY_PACK(SDLK_c)]		= "c";
+  keystr[KEY_PACK(SDLK_d)]		= "d";
+  keystr[KEY_PACK(SDLK_e)]		= "e";
+  keystr[KEY_PACK(SDLK_f)]		= "f";
+  keystr[KEY_PACK(SDLK_g)]		= "g";
+  keystr[KEY_PACK(SDLK_h)]		= "h";
+  keystr[KEY_PACK(SDLK_i)]		= "i";
+  keystr[KEY_PACK(SDLK_j)]		= "j";
+  keystr[KEY_PACK(SDLK_k)]		= "k";
+  keystr[KEY_PACK(SDLK_l)]		= "l";
+  keystr[KEY_PACK(SDLK_m)]		= "m";
+  keystr[KEY_PACK(SDLK_n)]		= "n";
+  keystr[KEY_PACK(SDLK_o)]		= "o";
+  keystr[KEY_PACK(SDLK_p)]		= "p";
+  keystr[KEY_PACK(SDLK_q)]		= "q";
+  keystr[KEY_PACK(SDLK_r)]		= "r";
+  keystr[KEY_PACK(SDLK_s)]		= "s";
+  keystr[KEY_PACK(SDLK_t)]		= "t";
+  keystr[KEY_PACK(SDLK_u)]		= "u";
+  keystr[KEY_PACK(SDLK_v)]		= "v";
+  keystr[KEY_PACK(SDLK_w)]		= "w";
+  keystr[KEY_PACK(SDLK_x)]		= "x";
+  keystr[KEY_PACK(SDLK_y)]		= "y";
+  keystr[KEY_PACK(SDLK_z)]		= "z";
+  keystr[KEY_PACK(SDLK_DELETE)]		= "Del";
 
 
   /* Numeric keypad */
-  keystr[SDLK_KP0]	= "Num[0]";
-  keystr[SDLK_KP1]	= "Num[1]";
-  keystr[SDLK_KP2]	= "Num[2]";
-  keystr[SDLK_KP3]	= "Num[3]";
-  keystr[SDLK_KP4]	= "Num[4]";
-  keystr[SDLK_KP5]	= "Num[5]";
-  keystr[SDLK_KP6]	= "Num[6]";
-  keystr[SDLK_KP7]	= "Num[7]";
-  keystr[SDLK_KP8]	= "Num[8]";
-  keystr[SDLK_KP9]	= "Num[9]";
-  keystr[SDLK_KP_PERIOD]= "Num[.]";
-  keystr[SDLK_KP_DIVIDE]= "Num[/]";
-  keystr[SDLK_KP_MULTIPLY]= "Num[*]";
-  keystr[SDLK_KP_MINUS]	= "Num[-]";
-  keystr[SDLK_KP_PLUS]	= "Num[+]";
-  keystr[SDLK_KP_ENTER]	= "Num[Enter]";
-  keystr[SDLK_KP_EQUALS]= "Num[=]";
+  keystr[KEY_PACK(SDLK_KP0)]		= "Num[0]";
+  keystr[KEY_PACK(SDLK_KP1)]		= "Num[1]";
+  keystr[KEY_PACK(SDLK_KP2)]		= "Num[2]";
+  keystr[KEY_PACK(SDLK_KP3)]		= "Num[3]";
+  keystr[KEY_PACK(SDLK_KP4)]		= "Num[4]";
+  keystr[KEY_PACK(SDLK_KP5)]		= "Num[5]";
+  keystr[KEY_PACK(SDLK_KP6)]		= "Num[6]";
+  keystr[KEY_PACK(SDLK_KP7)]		= "Num[7]";
+  keystr[KEY_PACK(SDLK_KP8)]		= "Num[8]";
+  keystr[KEY_PACK(SDLK_KP9)]		= "Num[9]";
+  keystr[KEY_PACK(SDLK_KP_PERIOD)]	= "Num[.]";
+  keystr[KEY_PACK(SDLK_KP_DIVIDE)]	= "Num[/]";
+  keystr[KEY_PACK(SDLK_KP_MULTIPLY)]	= "Num[*]";
+  keystr[KEY_PACK(SDLK_KP_MINUS)]	= "Num[-]";
+  keystr[KEY_PACK(SDLK_KP_PLUS)]	= "Num[+]";
+  keystr[KEY_PACK(SDLK_KP_ENTER)]	= "Num[Enter]";
+  keystr[KEY_PACK(SDLK_KP_EQUALS)]	= "Num[=]";
 
   /* Arrows + Home/End pad */
-  keystr[SDLK_UP]	= "Up";
-  keystr[SDLK_DOWN]	= "Down";
-  keystr[SDLK_RIGHT]	= "Right";
-  keystr[SDLK_LEFT]	= "Left";
-  keystr[SDLK_INSERT]	= "Insert";
-  keystr[SDLK_HOME]	= "Home";
-  keystr[SDLK_END]	= "End";
-  keystr[SDLK_PAGEUP]	= "PageUp";
-  keystr[SDLK_PAGEDOWN]	= "PageDown";
+  keystr[KEY_PACK(SDLK_UP)]		= "Up";
+  keystr[KEY_PACK(SDLK_DOWN)]		= "Down";
+  keystr[KEY_PACK(SDLK_RIGHT)]		= "Right";
+  keystr[KEY_PACK(SDLK_LEFT)]		= "Left";
+  keystr[KEY_PACK(SDLK_INSERT)]		= "Insert";
+  keystr[KEY_PACK(SDLK_HOME)]		= "Home";
+  keystr[KEY_PACK(SDLK_END)]		= "End";
+  keystr[KEY_PACK(SDLK_PAGEUP)]		= "PageUp";
+  keystr[KEY_PACK(SDLK_PAGEDOWN)]	= "PageDown";
 
   /* Function keys */
-  keystr[SDLK_F1]	= "F1";
-  keystr[SDLK_F2]	= "F2";
-  keystr[SDLK_F3]	= "F3";
-  keystr[SDLK_F4]	= "F4";
-  keystr[SDLK_F5]	= "F5";
-  keystr[SDLK_F6]	= "F6";
-  keystr[SDLK_F7]	= "F7";
-  keystr[SDLK_F8]	= "F8";
-  keystr[SDLK_F9]	= "F9";
-  keystr[SDLK_F10]	= "F10";
-  keystr[SDLK_F11]	= "F11";
-  keystr[SDLK_F12]	= "F12";
-  keystr[SDLK_F13]	= "F13";
-  keystr[SDLK_F14]	= "F14";
-  keystr[SDLK_F15]	= "F15";
+  keystr[KEY_PACK(SDLK_F1)]		= "F1";
+  keystr[KEY_PACK(SDLK_F2)]		= "F2";
+  keystr[KEY_PACK(SDLK_F3)]		= "F3";
+  keystr[KEY_PACK(SDLK_F4)]		= "F4";
+  keystr[KEY_PACK(SDLK_F5)]		= "F5";
+  keystr[KEY_PACK(SDLK_F6)]		= "F6";
+  keystr[KEY_PACK(SDLK_F7)]		= "F7";
+  keystr[KEY_PACK(SDLK_F8)]		= "F8";
+  keystr[KEY_PACK(SDLK_F9)]		= "F9";
+  keystr[KEY_PACK(SDLK_F10)]		= "F10";
+  keystr[KEY_PACK(SDLK_F11)]		= "F11";
+  keystr[KEY_PACK(SDLK_F12)]		= "F12";
+  keystr[KEY_PACK(SDLK_F13)]		= "F13";
+  keystr[KEY_PACK(SDLK_F14)]		= "F14";
+  keystr[KEY_PACK(SDLK_F15)]		= "F15";
 
   /* Key state modifier keys */
-  keystr[SDLK_NUMLOCK]	= "NumLock";
-  keystr[SDLK_CAPSLOCK]	= "CapsLock";
-  keystr[SDLK_SCROLLOCK]= "ScrlLock";
-  keystr[SDLK_RSHIFT]	= "RShift";
-  keystr[SDLK_LSHIFT]	= "LShift";
-  keystr[SDLK_RCTRL]	= "RCtrl";
-  keystr[SDLK_LCTRL]	= "LCtrl";
-  keystr[SDLK_RALT]	= "RAlt";
-  keystr[SDLK_LALT]	= "LAlt";
-  keystr[SDLK_RMETA]	= "RMeta";
-  keystr[SDLK_LMETA]	= "LMeta";
-  keystr[SDLK_LSUPER]	= "LSuper";
-  keystr[SDLK_RSUPER]	= "RSuper";
-  keystr[SDLK_MODE]	= "Mode";
-  keystr[SDLK_COMPOSE]	= "Compose";
+  keystr[KEY_PACK(SDLK_NUMLOCK)]	= "NumLock";
+  keystr[KEY_PACK(SDLK_CAPSLOCK)]	= "CapsLock";
+  keystr[KEY_PACK(SDLK_SCROLLOCK)]	= "ScrlLock";
+  keystr[KEY_PACK(SDLK_RSHIFT)]		= "RShift";
+  keystr[KEY_PACK(SDLK_LSHIFT)]		= "LShift";
+  keystr[KEY_PACK(SDLK_RCTRL)]		= "RCtrl";
+  keystr[KEY_PACK(SDLK_LCTRL)]		= "LCtrl";
+  keystr[KEY_PACK(SDLK_RALT)]		= "RAlt";
+  keystr[KEY_PACK(SDLK_LALT)]		= "LAlt";
+  keystr[KEY_PACK(SDLK_RMETA)]		= "RMeta";
+  keystr[KEY_PACK(SDLK_LMETA)]		= "LMeta";
+  keystr[KEY_PACK(SDLK_LSUPER)]		= "LSuper";
+  keystr[KEY_PACK(SDLK_RSUPER)]		= "RSuper";
+  keystr[KEY_PACK(SDLK_MODE)]		= "Mode";
+  keystr[KEY_PACK(SDLK_COMPOSE)]	= "Compose";
     
   /* Miscellaneous function keys */
-  keystr[SDLK_HELP]	= "Help";
-  keystr[SDLK_PRINT]	= "Print";
-  keystr[SDLK_SYSREQ]	= "SysReq";
-  keystr[SDLK_BREAK]	= "Break";
-  keystr[SDLK_MENU]	= "Menu";
-  keystr[SDLK_POWER]	= "Power";
-  keystr[SDLK_EURO]	= "Euro";
-  keystr[SDLK_UNDO]	= "Undo";
+  keystr[KEY_PACK(SDLK_HELP)]		= "Help";
+  keystr[KEY_PACK(SDLK_PRINT)]		= "Print";
+  keystr[KEY_PACK(SDLK_SYSREQ)]		= "SysReq";
+  keystr[KEY_PACK(SDLK_BREAK)]		= "Break";
+  keystr[KEY_PACK(SDLK_MENU)]		= "Menu";
+  keystr[KEY_PACK(SDLK_POWER)]		= "Power";
+  keystr[KEY_PACK(SDLK_EURO)]		= "Euro";
+  keystr[KEY_PACK(SDLK_UNDO)]		= "Undo";
 
   /* Mouse und Joy buttons */
-  keystr[MOUSE_BUTTON1]	= "Mouse1";
-  keystr[MOUSE_BUTTON2] = "Mouse2";
-  keystr[MOUSE_BUTTON3] = "Mouse3";
-  keystr[MOUSE_WHEELUP] = "WheelUp";
-  keystr[MOUSE_WHEELDOWN]="WheelDown";
+  keystr[KEY_PACK(MOUSE_BUTTON1)] 	= "Mouse1";
+  keystr[KEY_PACK(MOUSE_BUTTON2)] 	= "Mouse2";
+  keystr[KEY_PACK(MOUSE_BUTTON3)] 	= "Mouse3";
+  keystr[KEY_PACK(MOUSE_WHEELUP)] 	= "WheelUp";
+  keystr[KEY_PACK(MOUSE_WHEELDOWN)]	="WheelDown";
 
-  keystr[JOY_UP]	= "JoyUp";
-  keystr[JOY_DOWN]	= "JoyDown"; 
-  keystr[JOY_LEFT]	= "JoyLeft"; 
-  keystr[JOY_RIGHT]	= "JoyRight"; 
-  keystr[JOY_BUTTON1] 	= "Joy1";
-  keystr[JOY_BUTTON2] 	= "Joy2";
-  keystr[JOY_BUTTON3] 	= "Joy3";
+  keystr[KEY_PACK(JOY_UP)]		= "JoyUp";
+  keystr[KEY_PACK(JOY_DOWN)]		= "JoyDown"; 
+  keystr[KEY_PACK(JOY_LEFT)]		= "JoyLeft"; 
+  keystr[KEY_PACK(JOY_RIGHT)]		= "JoyRight"; 
+  keystr[KEY_PACK(JOY_BUTTON1)] 	= "Joy1";
+  keystr[KEY_PACK(JOY_BUTTON2)] 	= "Joy2";
+  keystr[KEY_PACK(JOY_BUTTON3)] 	= "Joy3";
 
   return;
 } // init_keystr()
@@ -359,11 +359,11 @@ update_input (void)
 
 	case SDL_KEYDOWN:
 	  current_modifiers = event.key.keysym.mod;
-	  input_state[event.key.keysym.sym] = PRESSED;
+	  input_state[KEY_PACK(event.key.keysym.sym)] = PRESSED;
 	  break;
 	case SDL_KEYUP:
 	  current_modifiers = event.key.keysym.mod;
-	  input_state[event.key.keysym.sym] = RELEASED;
+	  input_state[KEY_PACK(event.key.keysym.sym)] = RELEASED;
 	  break;
 
 	case SDL_JOYAXISMOTION:
@@ -379,18 +379,18 @@ update_input (void)
 	      // so that it behaves like "set"/"release"
 	      if (joy_sensitivity*event.jaxis.value > 10000)   /* about half tilted */
 		{
-		  input_state[JOY_RIGHT] = PRESSED;
-		  input_state[JOY_LEFT] = FALSE;
+		  input_state[KEY_PACK(JOY_RIGHT)] = PRESSED;
+		  input_state[KEY_PACK(JOY_LEFT)] = FALSE;
 		}
 	      else if (joy_sensitivity*event.jaxis.value < -10000)
 		{
-		  input_state[JOY_LEFT] = PRESSED;
-		  input_state[JOY_RIGHT] = FALSE;
+		  input_state[KEY_PACK(JOY_LEFT)] = PRESSED;
+		  input_state[KEY_PACK(JOY_RIGHT)] = FALSE;
 		}
 	      else
 		{
-		  input_state[JOY_LEFT] = FALSE;
-		  input_state[JOY_RIGHT] = FALSE;
+		  input_state[KEY_PACK(JOY_LEFT)] = FALSE;
+		  input_state[KEY_PACK(JOY_RIGHT)] = FALSE;
 		}
 	    }
 	  else if ((axis == 1) || ((joy_num_axes >=5) && (axis == 4))) /* y-axis */
@@ -399,18 +399,18 @@ update_input (void)
 
 	      if (joy_sensitivity*event.jaxis.value > 10000)  
 		{
-		  input_state[JOY_DOWN] = PRESSED;
-		  input_state[JOY_UP] =  FALSE;
+		  input_state[KEY_PACK(JOY_DOWN)] = PRESSED;
+		  input_state[KEY_PACK(JOY_UP)] =  FALSE;
 		}
 	      else if (joy_sensitivity*event.jaxis.value < -10000)
 		{
-		  input_state[JOY_UP] = PRESSED;
-		  input_state[JOY_DOWN]= FALSE;
+		  input_state[KEY_PACK(JOY_UP)] = PRESSED;
+		  input_state[KEY_PACK(JOY_DOWN)]= FALSE;
 		}
 	      else
 		{
-		  input_state[JOY_UP] = FALSE;
-		  input_state[JOY_DOWN] = FALSE;
+		  input_state[KEY_PACK(JOY_UP)] = FALSE;
+		  input_state[KEY_PACK(JOY_DOWN)] = FALSE;
 		}
 	    }
 		
@@ -419,15 +419,15 @@ update_input (void)
 	case SDL_JOYBUTTONDOWN: 
 	  // first button
 	  if (event.jbutton.button == 0)
-	    input_state[JOY_BUTTON1] = PRESSED;
+	    input_state[KEY_PACK(JOY_BUTTON1)] = PRESSED;
 
 	  // second button
 	  else if (event.jbutton.button == 1) 
-	    input_state[JOY_BUTTON2] = PRESSED;
+	    input_state[KEY_PACK(JOY_BUTTON2)] = PRESSED;
 
 	  // and third button
 	  else if (event.jbutton.button == 2) 
-	    input_state[JOY_BUTTON3] = PRESSED;
+	    input_state[KEY_PACK(JOY_BUTTON3)] = PRESSED;
 
 	  axis_is_active = TRUE;
 	  break;
@@ -435,15 +435,15 @@ update_input (void)
 	case SDL_JOYBUTTONUP:
 	  // first button 
 	  if (event.jbutton.button == 0)
-	    input_state[JOY_BUTTON1] = FALSE;
+	    input_state[KEY_PACK(JOY_BUTTON1)] = FALSE;
 
 	  // second button
 	  else if (event.jbutton.button == 1) 
-	    input_state[JOY_BUTTON2] = FALSE;
+	    input_state[KEY_PACK(JOY_BUTTON2)] = FALSE;
 
 	  // and third button
 	  else if (event.jbutton.button == 2) 
-	    input_state[JOY_BUTTON3] = FALSE;
+	    input_state[KEY_PACK(JOY_BUTTON3)] = FALSE;
 
 	  axis_is_active = FALSE;
 	  break;
@@ -460,15 +460,15 @@ update_input (void)
 	case SDL_MOUSEBUTTONDOWN:
 	  if (event.button.button == SDL_BUTTON_LEFT)
 	    {
-	      input_state[MOUSE_BUTTON1] = PRESSED;
+	      input_state[KEY_PACK(MOUSE_BUTTON1)] = PRESSED;
 	      axis_is_active = TRUE;
 	    }
 
 	  if (event.button.button == SDL_BUTTON_RIGHT)
-	    input_state[MOUSE_BUTTON2] = PRESSED;
+	    input_state[KEY_PACK(MOUSE_BUTTON2)] = PRESSED;
 
 	  if (event.button.button == SDL_BUTTON_MIDDLE)  
-	    input_state[MOUSE_BUTTON3] = PRESSED;
+	    input_state[KEY_PACK(MOUSE_BUTTON3)] = PRESSED;
 
 	  // wheel events are immediately released, so we rather
 	  // count the number of not yet read-out events
@@ -484,15 +484,15 @@ update_input (void)
         case SDL_MOUSEBUTTONUP:
 	  if (event.button.button == SDL_BUTTON_LEFT)
 	    {
-	      input_state[MOUSE_BUTTON1] = FALSE;
+	      input_state[KEY_PACK(MOUSE_BUTTON1)] = FALSE;
 	      axis_is_active = FALSE;
 	    }
 
 	  if (event.button.button == SDL_BUTTON_RIGHT)
-	    input_state[MOUSE_BUTTON2] = FALSE;
+	    input_state[KEY_PACK(MOUSE_BUTTON2)] = FALSE;
 
 	  if (event.button.button == SDL_BUTTON_MIDDLE)
-	    input_state[MOUSE_BUTTON3] = FALSE;
+	    input_state[KEY_PACK(MOUSE_BUTTON3)] = FALSE;
 
 	  break;
 
@@ -604,7 +604,7 @@ KeyIsPressed (SDLKey key)
 {
   update_input();
 
-  return( (input_state[key] & PRESSED) == PRESSED );
+  return( (input_state[KEY_PACK(key)] & PRESSED) == PRESSED );
 }
 
 
@@ -623,7 +623,7 @@ KeyIsPressedR (SDLKey key)
 void 
 ReleaseKey (SDLKey key)
 {
-  input_state[key] = FALSE;
+  input_state[KEY_PACK(key)] = FALSE;
   return;
 }
 
@@ -661,23 +661,23 @@ any_key_pressed (void)
 
   update_input();
 
-  for (i=0; i<SDLK_LAST; i++)
+  for (i=0; i<KEY_PACK(SDLK_LAST); i++)
     if ( just_pressed(input_state[i]) )
       { 
 	clear_fresh(input_state[i]);
 	ret = TRUE; 
 	break;
       }
-  if ( just_pressed(input_state[JOY_BUTTON1]) )
+  if ( just_pressed(input_state[KEY_PACK(JOY_BUTTON1)]) )
     {
-      clear_fresh (input_state[JOY_BUTTON1]);
+      clear_fresh (input_state[KEY_PACK(JOY_BUTTON1)]);
       ret = TRUE;
     }
 
-  if ( just_pressed(input_state[MOUSE_BUTTON1]) )
+  if ( just_pressed(input_state[KEY_PACK(MOUSE_BUTTON1)]) )
     {
       ret = TRUE;
-      clear_fresh (input_state[MOUSE_BUTTON1]);
+      clear_fresh (input_state[KEY_PACK(MOUSE_BUTTON1)]);
     }
 
   return (ret);
