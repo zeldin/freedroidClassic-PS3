@@ -1082,6 +1082,7 @@ FS_filelength (FILE *f)
 void
 init_progress (char *text)
 {
+#if 0
   char *fpath;
   SDL_Rect dst;
   BFont_Info *oldfont;
@@ -1116,6 +1117,7 @@ init_progress (char *text)
 
   SDL_Flip (ne_screen);
 
+#endif
 } // init_progress()
 
 
@@ -1125,6 +1127,7 @@ init_progress (char *text)
 void
 update_progress (int percent)
 {
+#if 0
   SDL_Rect dst, src;
 
   Copy_Rect (ProgressBar_Rect, dst);
@@ -1145,6 +1148,7 @@ update_progress (int percent)
   
   return;
 
+#endif
 } // update_progress()
 
 #undef _misc_c
