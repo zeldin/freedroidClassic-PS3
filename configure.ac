@@ -6,6 +6,11 @@ SDL_VERSION=1.2.3
 
 dnl Detect the canonical host and target build environment
 
+# Kluge for PS3: config.sub doesn't know about "ppu"
+if test "x$host_alias" = xppu; then
+  ac_cv_host="powerpc64-ps3-psl1ght"
+fi
+
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
