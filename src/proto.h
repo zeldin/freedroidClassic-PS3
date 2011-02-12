@@ -135,6 +135,8 @@ EXTERN void white_noise (SDL_Surface *bitmap, SDL_Rect *rect, int timeout);
 EXTERN void ScaleGraphics (float scale);
 EXTERN void ScalePic (SDL_Surface **pic, float scale);
 EXTERN void ScaleStatRects (float scale);
+EXTERN void toggle_fullscreen (void);
+EXTERN SDL_Surface *Load_Block (char *fpath, int line, int col, SDL_Rect * block, int flags);
 
 /* map.c */
 #undef EXTERN
@@ -174,7 +176,6 @@ EXTERN void Set_BG_Music_Volume(float);
 EXTERN void Set_Sound_FX_Volume(float);
 EXTERN void Switch_Background_Music_To ( char * filename_raw );
 EXTERN void Play_Sound (int);
-EXTERN void StartSound (int);
 EXTERN void GotHitSound (void);
 EXTERN void GotIntoBlastSound (void);
 EXTERN void CountdownSound (void);
@@ -204,23 +205,24 @@ EXTERN void Takeover_Game_Lost_Sound (void);
 #define EXTERN extern
 #endif
 EXTERN void ReleaseKey (SDLKey key);
-EXTERN int keyboard_update(void);
+EXTERN int update_input(void);
 EXTERN int getchar_raw (void);
 EXTERN void ResetMouseWheel (void);
 EXTERN bool WheelUpPressed(void);
 EXTERN bool WheelDownPressed(void);
-EXTERN bool MouseRightPressed(void);
-EXTERN bool MouseRightPressedR (void);
-EXTERN bool MouseLeftPressed(void);
-EXTERN bool MouseLeftPressedR (void);
 EXTERN void Init_Joy(void);
 EXTERN void ReactToSpecialKeys(void);
+
+EXTERN bool any_key_pressed (void);
 
 EXTERN bool KeyIsPressed (SDLKey key);
 EXTERN bool KeyIsPressedR (SDLKey key);
 EXTERN bool ModIsPressed (SDLMod mod);
 
 EXTERN bool NoDirectionPressed (void);
+EXTERN bool cmd_is_active(enum _cmds cmd);
+EXTERN bool cmd_is_activeR(enum _cmds cmd);
+EXTERN void init_keystr (void);
 
 /* menu.c */
 #undef EXTERN
@@ -266,6 +268,8 @@ EXTERN void Teleport (int LNum, int X, int Y);
 EXTERN void Terminate (int);
 EXTERN void *MyMalloc (long);
 EXTERN int FS_filelength (FILE *f);
+EXTERN void init_progress (char *txt);
+EXTERN void update_progress (int percent);
 
 /* enemy.c */
 #undef EXTERN
@@ -334,7 +338,7 @@ EXTERN void ChooseColor (void);
 EXTERN void PlayGame (void);
 EXTERN void EnemyMovements (void);
 
-EXTERN int GetTakeoverGraphics (void);
+EXTERN int set_takeover_rects (void);
 EXTERN void ShowPlayground ();
 EXTERN void InventPlayground (void);
 

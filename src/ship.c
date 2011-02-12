@@ -44,6 +44,7 @@
 int CursorIsOnRect (SDL_Rect *rect);
 SDL_Rect up_rect,down_rect,left_rect,right_rect;
 extern bool show_cursor;
+extern int vid_bpp;
 
 #define UPDATE_ONLY 0x01
 
@@ -81,7 +82,6 @@ EnterLift (void)
    * the time spend in the menu. */
   Activate_Conservative_Frame_Computation();
 
-
   /* make sure to release the fire-key */
   SpacePressedR();
   MouseLeftPressedR();
@@ -115,7 +115,6 @@ EnterLift (void)
   DisplayBanner (NULL, NULL,  BANNER_FORCE_UPDATE );      
 
   ShowLifts (curLevel, liftrow);
-
 
   while (! FirePressedR())
     {
@@ -159,6 +158,9 @@ EnterLift (void)
 		MoveLiftSound ();
 	      }
 	  }			/* if downlevel */
+
+      SDL_Delay(10);
+
     }				/* while !SpaceReleased */
 
   //--------------------
@@ -329,7 +331,7 @@ EnterKonsole (void)
 	  if (show_cursor)
 	    SDL_WarpMouse (Cons_Menu_Rects[pos].x+Cons_Menu_Rects[pos].w/2, 
 			   Cons_Menu_Rects[pos].y+Cons_Menu_Rects[pos].h/2);
-	  keyboard_update ();  // this sets a new last_mouse_event
+	  update_input ();  // this sets a new last_mouse_event
 	  last_mouse_event = mousemove_buf; //... which we override.. ;)
 	  
 
@@ -346,7 +348,7 @@ EnterKonsole (void)
 	  if (show_cursor)
 	    SDL_WarpMouse (Cons_Menu_Rects[pos].x+Cons_Menu_Rects[pos].w/2, 
 			   Cons_Menu_Rects[pos].y+Cons_Menu_Rects[pos].h/2);
-	  keyboard_update ();  // this sets a new last_mouse_event
+	  update_input ();  // this sets a new last_mouse_event
 	  last_mouse_event = mousemove_buf; //... which we override.. ;)
 
 	  PaintConsoleMenu (pos, UPDATE_ONLY);
@@ -790,7 +792,7 @@ show_droid_portrait (SDL_Rect dst, int droid_type, float cycle_time, int flags)
 
   if (!background) // first call
     {
-      tmp = SDL_CreateRGBSurface (0, dst.w, dst.h, screen_bpp, 0, 0, 0, 0);
+      tmp = SDL_CreateRGBSurface (0, dst.w, dst.h, vid_bpp, 0, 0, 0, 0);
       background = SDL_DisplayFormat (tmp);
       SDL_FreeSurface (tmp);
       SDL_BlitSurface (ne_screen, &dst, background, NULL);
@@ -865,6 +867,10 @@ show_droid_portrait (SDL_Rect dst, int droid_type, float cycle_time, int flags)
       SDL_BlitSurface (droid_pics, &src_rect, ne_screen, &dst);
 
       SDL_UpdateRects (ne_screen, 1, &dst);
+
+      // don't use full CPU unless requested
+      if (!GameConfig.HogCPU)
+	SDL_Delay(1);
 
       last_frame_time = SDL_GetTicks();
 

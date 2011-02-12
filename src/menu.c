@@ -39,6 +39,10 @@
 #include "proto.h"
 #include "map.h"
 
+extern int key_cmds[CMD_LAST][3]; 
+extern char *cmd_strings[CMD_LAST];
+extern char *keystr[INPUT_LAST];
+
 #define HIGHLIGHTCOLOR 255
 #define HIGHLIGHTCOLOR2 100
 #define ACTIVE_WP_COLOR 0x0FFFFFFFF
@@ -55,6 +59,8 @@ void DeleteWaypoint (level *level, int num);
 void CreateWaypoint (level *level, int BlockX, int BlockY);
 void GraphicsSound_Options_Menu (void);
 void On_Screen_Display_Options_Menu (void);
+void Key_Config_Menu (void);
+void Display_Key_Config (int selx, int sely);
 
 EXTERN int MyCursorX;
 EXTERN int MyCursorY;
@@ -137,11 +143,12 @@ EscapeMenu (void)
     { 
       BACK2GAME=1, 
       POS_GRAPHICS_SOUND_OPTIONS,
-      POS_ON_SCREEN_DISPLAYS,
       POS_LEGACY_OPTIONS,
+      POS_ON_SCREEN_DISPLAYS,
       POS_LEVEL_EDITOR,
       POS_HIGHSCORES,
       POS_CREDITS,
+      POS_KEYCONFIG,
       POS_QUIT
     };
   
@@ -160,17 +167,17 @@ EscapeMenu (void)
 
       PutInfluence (Menu_Rect.x, Menu_Rect.y + (MenuPosition-1.5)*fheight);
 
-
       pos = 0;
 
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Back to Game");
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight,"Graphics & Sound" );
-      PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight,"On-Screen Displays" );
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight,"Legacy Options");
+      PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight,"On-Screen Displays" );
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Level Editor");
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Highscores");
-      PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y +(pos++)*fheight, "Credits");
-      PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y +(pos++)*fheight, "Quit Game");
+      PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Credits");
+      PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Configure Keys");
+      PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Quit Game");
 
       SDL_Flip( ne_screen );
 
@@ -185,7 +192,7 @@ EscapeMenu (void)
 	    }
 	  
 
-	  if (FirePressedR())
+	  if (FirePressedR()||ReturnPressedR())
 	    {
 	      MenuItemSelectedSound();
 	      key = TRUE;
@@ -212,6 +219,9 @@ EscapeMenu (void)
 		  break;
 		case POS_CREDITS:
 		  Credits_Menu();
+		  break;
+		case POS_KEYCONFIG:
+		  Key_Config_Menu();
 		  break;
 		case POS_QUIT:
 		  QuitGameMenu ();
@@ -255,8 +265,136 @@ EscapeMenu (void)
 
 } // EscapeMenu
 
+// ------------------------------------------------------------
+// show/edit keyboard-config
+// ------------------------------------------------------------
+void
+Key_Config_Menu (void)
+{
+  int LastMenuPos = 1 + CMD_LAST;
+  int selx = 1, sely = 1;   // currently selected menu-position
+  bool finished = FALSE;
+  bool key = FALSE;
+  int posy = 0;
+  int i;
+  int oldkey, newkey = -1;
 
+  enum { BACK};
 
+  while (!finished)
+    {
+      key = FALSE;
+
+      while (!key)
+	{
+	  Display_Key_Config (selx, sely);
+	  SDL_Delay(1);
+
+	  if ( EscapePressedR() )
+	    {
+	      finished = TRUE;
+	      key = TRUE;
+	    }
+
+	  if (FirePressedR()||ReturnPressed())
+	    {
+	      MenuItemSelectedSound();
+	      key = TRUE;
+
+	      if (sely == 1) 
+		finished = TRUE;
+	      else
+		{
+		  oldkey = key_cmds[sely-2][selx-1];
+		  key_cmds[sely-2][selx-1] = '_';
+		  Display_Key_Config (selx, sely);
+		  newkey = getchar_raw();
+		  if (newkey == SDLK_ESCAPE)
+		    key_cmds[sely-2][selx-1] = oldkey;
+		  else
+		    key_cmds[sely-2][selx-1] = newkey;
+		}
+
+	    } // if FirePressed()
+
+	  if (UpPressedR() || WheelUpPressed ()) 
+	    {
+	      if ( sely > 1 ) sely--;
+	      else sely = LastMenuPos;
+	      MoveMenuPositionSound();
+	      key = TRUE;
+	    }
+	  if (DownPressedR() || WheelDownPressed ()) 
+	    {
+	      if ( sely < LastMenuPos ) sely++;
+	      else sely = 1;
+	      MoveMenuPositionSound();
+	      key = TRUE;
+	    }
+	  if (RightPressedR())
+	    {
+	      if ( selx < 3 ) selx++;
+	      else selx = 1;
+	      MoveMenuPositionSound();
+	      key = TRUE;
+	    }
+	  if (LeftPressedR())
+	    {
+	      if ( selx > 1 ) selx--;
+	      else selx = 3;
+	      MoveMenuPositionSound();
+	      key = TRUE;
+	    }
+
+	} // while !key
+
+    } // while !finished
+
+  return;
+
+} // Key_Config_Menu()
+
+// ------------------------------------------------------------
+// subroutine to display the current key-config and highlight
+//  current selection
+// ------------------------------------------------------------
+#define PosFont(x,y) ( (((x)!=selx)||((y)!=sely)) ? Font1_BFont : Font2_BFont )
+void
+Display_Key_Config (int selx, int sely)
+{
+  int startx = Full_User_Rect.x + 1.2*Block_Rect.w;
+  int starty = Full_User_Rect.y + FontHeight(GetCurrentFont());
+  int col1 = startx + 7.5 * CharWidth(GetCurrentFont(), 'O');
+  int col2 = col1 + 6.5 * CharWidth(GetCurrentFont(), 'O');
+  int col3 = col2 + 6.5 * CharWidth(GetCurrentFont(), 'O');
+  int posy = 0;
+  int i;
+
+  SDL_BlitSurface (Menu_Background, NULL, ne_screen, NULL);
+  
+  //      PutInfluence (startx - 1.1*Block_Rect.w, starty + (MenuPosition-1.5)*fheight);
+  
+  PrintStringFont (ne_screen, (sely==1)? Font2_BFont:Font1_BFont, startx, starty+(posy++)*fheight, "Back");
+
+  PrintStringFont (ne_screen, Font0_BFont, startx, starty + (posy)*fheight, "Command");
+  PrintStringFont (ne_screen, Font0_BFont, col1, starty + (posy)*fheight, "Key1");
+  PrintStringFont (ne_screen, Font0_BFont, col2, starty + (posy)*fheight, "Key2");
+  PrintStringFont (ne_screen, Font0_BFont, col3, starty + (posy)*fheight, "Key3");
+  posy ++;
+      
+  for (i=0; i < CMD_LAST; i++)
+    {
+      PrintStringFont (ne_screen, Font0_BFont, startx, starty+(posy)*fheight, cmd_strings[i]);
+      PrintStringFont (ne_screen, PosFont(1,2+i), col1, starty+(posy)*fheight, keystr[key_cmds[i][0]]);
+      PrintStringFont (ne_screen, PosFont(2,2+i), col2, starty+(posy)*fheight, keystr[key_cmds[i][1]]);
+      PrintStringFont (ne_screen, PosFont(3,2+i), col3, starty+(posy)*fheight, keystr[key_cmds[i][2]]);
+      posy ++;
+    }
+  
+  SDL_Flip( ne_screen );
+  
+  return;
+} // Display_Key_Config
 
 /*@Function============================================================
 @Desc: This function provides a the options menu.  This menu is a 
@@ -344,7 +482,7 @@ enum
 		reload_theme = TRUE;
 	    }
 
-	  if (FirePressedR())
+	  if (FirePressedR()||ReturnPressedR())
 	    {
 	      MenuItemSelectedSound();
 	      key = TRUE;
@@ -394,7 +532,7 @@ enum
 		default: 
 		  break;
 		} 
-	    } // if SpacePressed
+	    } // if FirePressed
 
 	  if (UpPressedR() || WheelUpPressed()) 
 	    {
@@ -504,30 +642,40 @@ GraphicsSound_Options_Menu (void)
   int MenuPosition=1;
   bool finished = FALSE;
   bool key = FALSE;
+  int pos;
 
 enum
   { SET_BG_MUSIC_VOLUME=1, 
     SET_SOUND_FX_VOLUME, 
     SET_GAMMA_CORRECTION, 
     SET_FULLSCREEN_FLAG, 
-    BACK };
+    SET_HOG_CPU,
+    BACK 
+  };
+
+ 
 
   while (!finished)
     {
       key = FALSE;
+
+      pos = 0;
+
       SDL_BlitSurface (Menu_Background, NULL, ne_screen, NULL);
 
       PutInfluence (Menu_Rect.x, Menu_Rect.y+ (MenuPosition-1.5)*fheight);
 
-      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+0*fheight, 
+      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+(pos++)*fheight, 
 		   "Background Music: %1.2f" , GameConfig.Current_BG_Music_Volume );
-      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+1*fheight,  
+      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+(pos++)*fheight,  
 		   "Sound Effects: %1.2f", GameConfig.Current_Sound_FX_Volume );
-      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+2*fheight,  
+      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+(pos++)*fheight,  
 		   "Gamma: %1.2f", GameConfig.Current_Gamma_Correction );
-      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+3*fheight, 
+      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+(pos++)*fheight, 
 		   "Fullscreen Mode: %s", GameConfig.UseFullscreen ? "ON" : "OFF");
-      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+4*fheight, "Back");
+      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+(pos++)*fheight, 
+		   "Use 100%% CPU: %s", GameConfig.HogCPU ? "ON" : "OFF");
+      PrintString (ne_screen, OptionsMenu_Rect.x, Menu_Rect.y+(pos++)*fheight, "Back");
       SDL_Flip( ne_screen );
 
       while (!key)
@@ -539,23 +687,32 @@ enum
 	      finished = TRUE;
 	      key = TRUE;
 	    }
-	  if (RightPressed() || LeftPressed() || MouseLeftPressed() || SpacePressed() || MouseRightPressed()) 
+	  if (RightPressed() || LeftPressed() || MouseLeftPressed() || 
+	      FirePressed() || ReturnPressed()|| MouseRightPressed()) 
 	    key = TRUE;
 
       
 	  switch (MenuPosition)
 	    {
 	    case SET_FULLSCREEN_FLAG:
-	      if (FirePressedR())
+	      if (FirePressedR()||ReturnPressedR())
 		{
-		  SDL_WM_ToggleFullScreen (ne_screen);
-		  GameConfig.UseFullscreen = !GameConfig.UseFullscreen;
+		  toggle_fullscreen();
+		  MenuItemSelectedSound();
+		}
+	      break;
+
+
+	    case SET_HOG_CPU:
+	      if (FirePressedR()||ReturnPressedR())
+		{
+		  GameConfig.HogCPU = !GameConfig.HogCPU;
 		  MenuItemSelectedSound();
 		}
 	      break;
 
 	    case BACK:
-	      if (FirePressedR())
+	      if (FirePressedR()||ReturnPressedR())
 		{
 		  MenuItemSelectedSound();
 		  finished=TRUE;
@@ -696,7 +853,7 @@ enum
 	      key = TRUE;
 	    }
 
-	  if (FirePressedR())
+	  if (FirePressedR()||ReturnPressed())
 	    {
 	      MenuItemSelectedSound();
 	      key = TRUE;
@@ -724,7 +881,7 @@ enum
 		default: 
 		  break;
 		} 
-	    } // if SpacePressed()
+	    } // if FirePressed()
 
 	  if (UpPressedR() || WheelUpPressed ()) 
 	    {
@@ -761,47 +918,63 @@ Credits_Menu (void)
 {
   int h, em; 
   SDL_Rect screen;
+  BFont_Info *oldfont;
+  int col2 = 2*User_Rect.w/3;
+
   h = FontHeight(Menu_BFont);
   em = CharWidth (Menu_BFont, 'm');
-  
+
   Copy_Rect (Screen_Rect, screen);
   SDL_SetClipRect( ne_screen, NULL );
   DisplayImage ( find_file(CREDITS_PIC_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL));
   MakeGridOnScreen (&screen);
 
+  oldfont = GetCurrentFont();
+  SetCurrentFont (Font1_BFont);
 
   printf_SDL (ne_screen, UserCenter_x - 2*em, h, "CREDITS\n");
 
   printf_SDL (ne_screen, em, -1, "PROGRAMMING:");
-  printf_SDL (ne_screen, 2*Full_User_Rect.w/3, -1, "Johannes Prix\n");
+  printf_SDL (ne_screen, col2, -1, "Johannes Prix\n");
   printf_SDL (ne_screen, -1, -1, "Reinhard Prix\n");
   printf_SDL (ne_screen, -1, -1, "\n");
 
   printf_SDL (ne_screen, em, -1, "ARTWORK:");
-  printf_SDL (ne_screen, 2*User_Rect.w/3, -1, "Bastian Salmela\n");
-  printf_SDL (ne_screen, -1 , -1, "Lanzz\n");
+  printf_SDL (ne_screen, col2, -1, "Bastian Salmela\n");
+  printf_SDL (ne_screen, -1, -1, "\n");
+  printf_SDL (ne_screen, em, -1, "ADDITIONAL THEMES:\n");
+  printf_SDL (ne_screen, 2*em, -1, "Lanzz-theme");
+  printf_SDL (ne_screen, col2, -1, "Lanzz\n");
+  printf_SDL (ne_screen, 2*em, -1, "Para90-theme");
+  printf_SDL (ne_screen, col2, -1, "Andreas Wedemeyer\n");
 
-  printf_SDL (ne_screen, em, -1, "C64 LEGACY MUSIC mods:\n");
+  printf_SDL (ne_screen, -1, -1, "\n");
+  printf_SDL (ne_screen, em, -1, "C64 LEGACY MODS:\n");
 
-  printf_SDL (ne_screen, em, -1, "#dreamfish/trsi:");
-  printf_SDL (ne_screen, Full_User_Rect.w/2, -1, "Green Beret, Sanxion,\n");
-  printf_SDL (ne_screen, Full_User_Rect.w/2, -1, "Uridium2\n");
 
-  printf_SDL (ne_screen, em, -1, "4-mat:");
-  printf_SDL (ne_screen, Full_User_Rect.w/2, -1, "The last V8, Anarchy\n");
+  printf_SDL (ne_screen, 2*em, -1, "Green Beret, Sanxion, Uridium2");
+  printf_SDL (ne_screen, col2, -1, "#dreamfish/trsi\n");
 
-  printf_SDL (ne_screen, em, -1, "Kollaps:");
-  printf_SDL (ne_screen, Full_User_Rect.w/2, -1, "Tron\n");
+  printf_SDL (ne_screen, 2*em, -1, "The last V8, Anarchy");
+  printf_SDL (ne_screen, col2, -1, "4-mat\n");
 
-  printf_SDL (ne_screen, em, -1, "Nashua:");
-  printf_SDL (ne_screen, Full_User_Rect.w/2, -1, "Starpaws\n");
+  printf_SDL (ne_screen, 2*em, -1, "Tron");
+  printf_SDL (ne_screen, col2, -1, "Kollaps\n");
+
+
+  printf_SDL (ne_screen, 2*em, -1, "Starpaws");
+  printf_SDL (ne_screen, col2, -1, "Nashua\n");
+
   
-  printf_SDL (ne_screen, em, -1, "Android:");
-  printf_SDL (ne_screen, Full_User_Rect.w/2, -1, "Commando\n");
+  printf_SDL (ne_screen, 2*em, -1, "Commando");
+  printf_SDL (ne_screen, col2, -1, "Android");
+
 
   SDL_Flip( ne_screen );
 
-  Wait4Fire();
+  wait4key();
+
+  SetCurrentFont (oldfont);
   
   return;
 
@@ -1004,8 +1177,8 @@ LevelEditor(void)
 			      HIGHLIGHTCOLOR2 );
 
       
-      PrintStringFont (ne_screen, FPS_Display_BFont, Full_User_Rect.x+Full_User_Rect.w/3 , 
-		       Full_User_Rect.y+Full_User_Rect.h - FontHeight(FPS_Display_BFont), 
+      PrintStringFont (ne_screen, Font0_BFont, Full_User_Rect.x+Full_User_Rect.w/3 , 
+		       Full_User_Rect.y+Full_User_Rect.h - FontHeight(Font0_BFont), 
 		       "Press F1 for keymap");
 
       SDL_Flip( ne_screen );
@@ -1047,7 +1220,7 @@ LevelEditor(void)
 	  PutString ( ne_screen , KeymapOffset , (k) * FontHeight(Menu_BFont)  , "C...start/end waypoint CONNECTION" ); k++;
 
 	  SDL_Flip ( ne_screen );
-	  while (!FirePressedR() && !EscapePressedR()) SDL_Delay(1);
+	  while (!FirePressedR() && !EscapePressedR() && !ReturnPressedR() ) SDL_Delay(1);
 	}
       
       //--------------------
@@ -1324,17 +1497,17 @@ LevelEditMenu (void)
 	  switch (MenuPosition) 
 	    {
 	    case SAVE_LEVEL_POSITION:
-	      if (FirePressedR())
+	      if (FirePressedR()||ReturnPressedR())
 		{
 		  MenuItemSelectedSound();
 		  SaveShip("Testship");
 		  CenteredPutString (ne_screen, 3*FontHeight(Menu_BFont),"Ship saved as 'Testship.shp'\n");
 		  SDL_Flip ( ne_screen );
-		  while ( !FirePressedR() && !EscapePressedR() ) SDL_Delay(1);
+		  while ( !FirePressedR() && !EscapePressedR() && !ReturnPressedR() ) SDL_Delay(1);
 		}
 	      break;
 	    case SET_LEVEL_NAME:
-	      if (FirePressedR())
+	      if (FirePressedR()||ReturnPressedR())
 		{
 		  MenuItemSelectedSound();
 		  DisplayText ("New level name: ",
@@ -1346,7 +1519,7 @@ LevelEditMenu (void)
 		}
 	      break;
 	    case SET_BACKGROUND_SONG_NAME:
-	      if (FirePressedR())
+	      if (FirePressedR()||ReturnPressedR())
 		{
 		  MenuItemSelectedSound();
 		  DisplayText ("Bg music filename: ", 
@@ -1357,7 +1530,7 @@ LevelEditMenu (void)
 		}
 	      break;
 	    case SET_LEVEL_COMMENT:
-	      if (FirePressedR())
+	      if (FirePressedR()||ReturnPressedR())
 		{
 		  MenuItemSelectedSound();
 		  DisplayText ("New level-comment :",
@@ -1368,11 +1541,20 @@ LevelEditMenu (void)
 		}
 	      break;
 	    case BACK:
-	      if (FirePressedR())
+	      if (FirePressedR()||ReturnPressedR())
 		{
 		  MenuItemSelectedSound();
 		  Weiter=!Weiter;
 		  Done = TRUE;
+		  {
+		    int i;
+		    for (i = 0; i < curShip.num_levels; i++)
+		      {
+			ResetLevelMap (curShip.AllLevels[i]);	// close all doors
+			InterpretMap (curShip.AllLevels[i]); // initialize doors, refreshes and lifts
+		      }
+		  }
+		  
 		  SetCombatScaleTo( 1 );
 		}
 	      break;
@@ -1532,8 +1714,9 @@ DeleteWaypoint (level *Lev, int num)
 
 } // DeleteWaypoint()
 
-
-// create a new empty waypoint on position x/y
+/*----------------------------------------------------------------------
+ * create a new empty waypoint on position x/y
+ *----------------------------------------------------------------------*/
 void
 CreateWaypoint (level *Lev, int x, int y)
 {
@@ -1578,7 +1761,7 @@ Cheatmenu (void)
   // the time spend in the menu.
   Activate_Conservative_Frame_Computation();
 
-  font =  FPS_Display_BFont;
+  font =  Font0_BFont;
 
 
   SetCurrentFont (font);  /* not the ideal one, but there's currently */
@@ -1602,8 +1785,6 @@ Cheatmenu (void)
       printf_SDL (ne_screen, -1, -1, " i. Invinciblemode: %s",
 		  InvincibleMode ? "ON\n" : "OFF\n");
       printf_SDL (ne_screen, -1, -1, " e. set energy\n");
-      printf_SDL (ne_screen, -1, -1, " h. Hide invisible map parts: %s",
-		  HideInvisibleMap ? "ON\n" : "OFF\n" );
       printf_SDL (ne_screen, -1, -1, " n. No hidden droids: %s",
 		  show_all_droids ? "ON\n" : "OFF\n" );
       printf_SDL (ne_screen, -1, -1, " m. Map of Deck xy\n");
@@ -1771,10 +1952,6 @@ Cheatmenu (void)
 	  if (Me.energy > Me.health) Me.health = Me.energy;
 	  break;
 
-	case 'h': /* toggle hide invisible map */
-	  HideInvisibleMap = !HideInvisibleMap;
-	  break;
-
 	case 'n': /* toggle display of all droids */
 	  show_all_droids = !show_all_droids;
 	  break;
@@ -1829,7 +2006,7 @@ Cheatmenu (void)
 
   ClearGraphMem ();
 
-  keyboard_update (); /* treat all pending keyboard events */
+  update_input (); /* treat all pending keyboard events */
 
   return;
 } /* Cheatmenu() */

@@ -49,6 +49,7 @@ int MyCursorX;
 int MyCursorY;
 
 char TextBuffer[10000];
+extern int vid_bpp;
 
 void 
 EnemyHitByBulletText( int Enum )
@@ -207,12 +208,15 @@ ScrollText (char *Text, SDL_Rect *rect, int SecondsMinimumDuration )
 	}
       SDL_Flip (ne_screen);
 
+      if (!GameConfig.HogCPU)
+	SDL_Delay(1);
 
       if (just_started)
 	{
 	  just_started = FALSE;
 	  now = SDL_GetTicks();
-	  while ( (!FirePressed()) && (SDL_GetTicks() - now < SHOW_WAIT)) ;  // wait before scrolling
+	  while ( (!FirePressed()) && (SDL_GetTicks() - now < SHOW_WAIT)) 
+	    SDL_Delay(1);  // wait before scrolling
 
 	  //--------------------
 	  // Returning from this function is only possible after the minimum display time has been
@@ -465,7 +469,7 @@ GetString (int MaxLen, int echo)
   y0 = MyCursorY;
   height = FontHeight (GetCurrentFont());
   
-  store = SDL_CreateRGBSurface(0, Screen_Rect.w, height, screen_bpp, 0, 0, 0, 0);
+  store = SDL_CreateRGBSurface(0, Screen_Rect.w, height, vid_bpp, 0, 0, 0, 0);
   Set_Rect (store_rect, x0, y0, Screen_Rect.w, height);
   SDL_BlitSurface (ne_screen, &store_rect, store, NULL);
 
@@ -492,7 +496,7 @@ GetString (int MaxLen, int echo)
 	  input[curpos] = 0;
 	  finished = TRUE;
 	}
-      else if (isprint (key) && (curpos < MaxLen) )  
+      else if ( (key < SDLK_DELETE) && isprint (key) && (curpos < MaxLen) )  
 	{
 	  /* printable characters are entered in string */
 	  input[curpos] = (char) key;   

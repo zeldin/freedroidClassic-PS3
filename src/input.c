@@ -38,6 +38,7 @@
 #include "global.h"
 #include "proto.h"
 
+// earlier SDL versions didn't define these...
 #ifndef SDL_BUTTON_WHEELUP 
 #define SDL_BUTTON_WHEELUP 4
 #endif
@@ -51,24 +52,222 @@ bool show_cursor;    // show mouse-cursor or not?
 int WheelUpEvents=0;    // count number of not read-out wheel events
 int WheelDownEvents=0;
 Uint32 last_mouse_event = 0;  // record when last mouse event took place (SDL ticks)
-int CurrentlyMouseRightPressed=0;
-int CurrentlyMouseLeftPressed = 0;
-
-bool key_pressed[SDLK_LAST];	// array of states (pressed/released) of all keys
-int joy_dirstate[4];  // array of 4 directions we map the joystick to
 
 SDLMod current_modifiers;
 
 SDL_Event event;
 
-// direction for joystick->keyboard mappings
-enum _joy_dirs {
-  JOY_UP = 0,
-  JOY_RIGHT,
-  JOY_DOWN,
-  JOY_LEFT
-};
-#define FLAG_NEW 0xf0
+int input_state[INPUT_LAST];	// array of states (pressed/released) of all keys
+
+int key_cmds[CMD_LAST][3] =  // array of mappings {key1,key2,key3 -> cmd}
+  {
+    {SDLK_UP, 	  JOY_UP, 	'w' },		// CMD_UP
+    {SDLK_DOWN,	  JOY_DOWN, 	's' },		// CMD_DOWN
+    {SDLK_LEFT,   JOY_LEFT, 	'a' },		// CMD_LEFT
+    {SDLK_RIGHT,  JOY_RIGHT, 	'd' },		// CMD_RIGHT
+    {SDLK_SPACE,  JOY_BUTTON1,   MOUSE_BUTTON1 },// CMD_FIRE  
+    {SDLK_RETURN, SDLK_RSHIFT, 	'e' }, 		// CMD_ACTIVATE
+    {SDLK_SPACE,  JOY_BUTTON2,   MOUSE_BUTTON2 },// CMD_TAKEOVER
+    {'q', 	  'q', 		 'q'  }, 	// CMD_QUIT,
+    {SDLK_PAUSE, 'p', 'p'  }, 			// CMD_PAUSE,
+    {SDLK_F12, SDLK_F12, SDLK_F12 }  		// CMD_SCREENSHOT
+  };
+
+char *keystr[INPUT_LAST];
+
+char *cmd_strings[CMD_LAST] = 
+  {
+    "UP", 
+    "DOWN",
+    "LEFT",
+    "RIGHT",
+    "FIRE",
+    "ACTIVATE",
+    "TAKEOVER",
+    "QUIT",
+    "PAUSE",
+    "SCREENSHOT"
+  };
+
+#define FRESH_BIT   	(0x01<<8)
+#define OLD_BIT		(0x01<<9)
+#define LONG_PRESSED	(TRUE|OLD_BIT)
+#define PRESSED		(TRUE|FRESH_BIT)
+#define RELEASED	(FALSE|FRESH_BIT)
+
+#define is_down(x) ((x) & (~FRESH_BIT) )
+#define just_pressed(x) ( (x) & PRESSED == PRESSED)
+
+#define clear_fresh(x) do { (x) &= ~FRESH_BIT; } while(0)
+
+
+void
+init_keystr (void)
+{
+  keystr[SDLK_BACKSPACE] = "BS";
+  keystr[SDLK_TAB]	= "Tab";
+  keystr[SDLK_CLEAR]	= "Clear";
+  keystr[SDLK_RETURN]	= "Return";
+  keystr[SDLK_PAUSE]	= "Pause";
+  keystr[SDLK_ESCAPE]	= "Esc";
+  keystr[SDLK_SPACE]	= "Space";
+  keystr[SDLK_EXCLAIM]	= "!";
+  keystr[SDLK_QUOTEDBL]	= "\"";
+  keystr[SDLK_HASH]	= "#";
+  keystr[SDLK_DOLLAR]	= "$";
+  keystr[SDLK_AMPERSAND]= "&";
+  keystr[SDLK_QUOTE]	= "'";
+  keystr[SDLK_LEFTPAREN]= "(";
+  keystr[SDLK_RIGHTPAREN]=")";
+  keystr[SDLK_ASTERISK]	= "*";
+  keystr[SDLK_PLUS]	= "+";
+  keystr[SDLK_COMMA]	= ",";
+  keystr[SDLK_MINUS]	= "-";
+  keystr[SDLK_PERIOD]	= ".";
+  keystr[SDLK_SLASH]	= "/";
+  keystr[SDLK_0]	= "0";	
+  keystr[SDLK_1]	= "1";
+  keystr[SDLK_2]	= "2";
+  keystr[SDLK_3]	= "3";
+  keystr[SDLK_4]	= "4";
+  keystr[SDLK_5]	= "5";
+  keystr[SDLK_6]	= "6";
+  keystr[SDLK_7]	= "7";
+  keystr[SDLK_8]	= "8";
+  keystr[SDLK_9]	= "9";
+  keystr[SDLK_COLON]	= ":";
+  keystr[SDLK_SEMICOLON]= ";";
+  keystr[SDLK_LESS]	= "<";
+  keystr[SDLK_EQUALS]	= "=";
+  keystr[SDLK_GREATER]	= ">";
+  keystr[SDLK_QUESTION]	= "?";
+  keystr[SDLK_AT]	= "@";
+  keystr[SDLK_LEFTBRACKET]	= "[";
+  keystr[SDLK_BACKSLASH]	= "\\";
+  keystr[SDLK_RIGHTBRACKET]	= "]";
+  keystr[SDLK_CARET]	= "^";
+  keystr[SDLK_UNDERSCORE]	= "_";
+  keystr[SDLK_BACKQUOTE]	= "`";
+  keystr[SDLK_a]	= "a";
+  keystr[SDLK_b]	= "b";
+  keystr[SDLK_c]	= "c";
+  keystr[SDLK_d]	= "d";
+  keystr[SDLK_e]	= "e";
+  keystr[SDLK_f]	= "f";
+  keystr[SDLK_g]	= "g";
+  keystr[SDLK_h]	= "h";
+  keystr[SDLK_i]	= "i";
+  keystr[SDLK_j]	= "j";
+  keystr[SDLK_k]	= "k";
+  keystr[SDLK_l]	= "l";
+  keystr[SDLK_m]	= "m";
+  keystr[SDLK_n]	= "n";
+  keystr[SDLK_o]	= "o";
+  keystr[SDLK_p]	= "p";
+  keystr[SDLK_q]	= "q";
+  keystr[SDLK_r]	= "r";
+  keystr[SDLK_s]	= "s";
+  keystr[SDLK_t]	= "t";
+  keystr[SDLK_u]	= "u";
+  keystr[SDLK_v]	= "v";
+  keystr[SDLK_w]	= "w";
+  keystr[SDLK_x]	= "x";
+  keystr[SDLK_y]	= "y";
+  keystr[SDLK_z]	= "z";
+  keystr[SDLK_DELETE]	= "Del";
+
+
+  /* Numeric keypad */
+  keystr[SDLK_KP0]	= "Num[0]";
+  keystr[SDLK_KP1]	= "Num[1]";
+  keystr[SDLK_KP2]	= "Num[2]";
+  keystr[SDLK_KP3]	= "Num[3]";
+  keystr[SDLK_KP4]	= "Num[4]";
+  keystr[SDLK_KP5]	= "Num[5]";
+  keystr[SDLK_KP6]	= "Num[6]";
+  keystr[SDLK_KP7]	= "Num[7]";
+  keystr[SDLK_KP8]	= "Num[8]";
+  keystr[SDLK_KP9]	= "Num[9]";
+  keystr[SDLK_KP_PERIOD]= "Num[.]";
+  keystr[SDLK_KP_DIVIDE]= "Num[/]";
+  keystr[SDLK_KP_MULTIPLY]= "Num[*]";
+  keystr[SDLK_KP_MINUS]	= "Num[-]";
+  keystr[SDLK_KP_PLUS]	= "Num[+]";
+  keystr[SDLK_KP_ENTER]	= "Num[Enter]";
+  keystr[SDLK_KP_EQUALS]= "Num[=]";
+
+  /* Arrows + Home/End pad */
+  keystr[SDLK_UP]	= "Up";
+  keystr[SDLK_DOWN]	= "Down";
+  keystr[SDLK_RIGHT]	= "Right";
+  keystr[SDLK_LEFT]	= "Left";
+  keystr[SDLK_INSERT]	= "Insert";
+  keystr[SDLK_HOME]	= "Home";
+  keystr[SDLK_END]	= "End";
+  keystr[SDLK_PAGEUP]	= "PageUp";
+  keystr[SDLK_PAGEDOWN]	= "PageDown";
+
+  /* Function keys */
+  keystr[SDLK_F1]	= "F1";
+  keystr[SDLK_F2]	= "F2";
+  keystr[SDLK_F3]	= "F3";
+  keystr[SDLK_F4]	= "F4";
+  keystr[SDLK_F5]	= "F5";
+  keystr[SDLK_F6]	= "F6";
+  keystr[SDLK_F7]	= "F7";
+  keystr[SDLK_F8]	= "F8";
+  keystr[SDLK_F9]	= "F9";
+  keystr[SDLK_F10]	= "F10";
+  keystr[SDLK_F11]	= "F11";
+  keystr[SDLK_F12]	= "F12";
+  keystr[SDLK_F13]	= "F13";
+  keystr[SDLK_F14]	= "F14";
+  keystr[SDLK_F15]	= "F15";
+
+  /* Key state modifier keys */
+  keystr[SDLK_NUMLOCK]	= "NumLock";
+  keystr[SDLK_CAPSLOCK]	= "CapsLock";
+  keystr[SDLK_SCROLLOCK]= "ScrlLock";
+  keystr[SDLK_RSHIFT]	= "RShift";
+  keystr[SDLK_LSHIFT]	= "LShift";
+  keystr[SDLK_RCTRL]	= "RCtrl";
+  keystr[SDLK_LCTRL]	= "LCtrl";
+  keystr[SDLK_RALT]	= "RAlt";
+  keystr[SDLK_LALT]	= "LAlt";
+  keystr[SDLK_RMETA]	= "RMeta";
+  keystr[SDLK_LMETA]	= "LMeta";
+  keystr[SDLK_LSUPER]	= "LSuper";
+  keystr[SDLK_RSUPER]	= "RSuper";
+  keystr[SDLK_MODE]	= "Mode";
+  keystr[SDLK_COMPOSE]	= "Compose";
+    
+  /* Miscellaneous function keys */
+  keystr[SDLK_HELP]	= "Help";
+  keystr[SDLK_PRINT]	= "Print";
+  keystr[SDLK_SYSREQ]	= "SysReq";
+  keystr[SDLK_BREAK]	= "Break";
+  keystr[SDLK_MENU]	= "Menu";
+  keystr[SDLK_POWER]	= "Power";
+  keystr[SDLK_EURO]	= "Euro";
+  keystr[SDLK_UNDO]	= "Undo";
+
+  /* Mouse und Joy buttons */
+  keystr[MOUSE_BUTTON1]	= "Mouse1";
+  keystr[MOUSE_BUTTON2] = "Mouse2";
+  keystr[MOUSE_BUTTON3] = "Mouse3";
+  keystr[MOUSE_WHEELUP] = "WheelUp";
+  keystr[MOUSE_WHEELDOWN]="WheelDown";
+
+  keystr[JOY_UP]	= "JoyUp";
+  keystr[JOY_DOWN]	= "JoyDown"; 
+  keystr[JOY_LEFT]	= "JoyLeft"; 
+  keystr[JOY_RIGHT]	= "JoyRight"; 
+  keystr[JOY_BUTTON1] 	= "Joy1";
+  keystr[JOY_BUTTON2] 	= "Joy2";
+  keystr[JOY_BUTTON3] 	= "Joy3";
+
+  return;
+} // init_keystr()
 
 
 int sgn (int x)
@@ -82,7 +281,7 @@ void Init_Joy (void)
 
   if (SDL_InitSubSystem (SDL_INIT_JOYSTICK) == -1)
     {
-      fprintf(stderr, "Couldn't initialize SDL-Joystick: %s\n",SDL_GetError());
+      fprintf(stderr, "Couldn't initialize SDL-Joystick: %s\n", SDL_GetError());
       Terminate(ERR);
     } else
       DebugPrintf(1, "\nSDL Joystick initialisation successful.\n");
@@ -110,31 +309,35 @@ void Init_Joy (void)
   return;
 }
 
-
+// FIXME: remove that obsolete stuff...
 void 
 ReactToSpecialKeys(void)
 {
-  //--------------------
-  // user asked for quit
-  //
-  if ( KeyIsPressedR('q') ) 
+
+  if ( cmd_is_active(CMD_QUIT) ) 
     QuitGameMenu();
 
+  if ( cmd_is_activeR(CMD_PAUSE) )
+    Pause ();
+
+  if ( cmd_is_active (CMD_SCREENSHOT) )
+    TakeScreenshot();
+
+  // this stuff remains hardcoded to keys
   if ( KeyIsPressedR('c') && AltPressed() && CtrlPressed() && ShiftPressed() ) 
     Cheatmenu ();
+
   if ( EscapePressedR() )
     EscapeMenu ();
 
-  if ( KeyIsPressedR ('p') )
-    Pause ();
-
-  if (KeyIsPressedR (SDLK_F12) )
-    TakeScreenshot();
 
 } // void ReactToSpecialKeys(void)
 
+//----------------------------------------------------------------------
+// main input-reading routine
+//----------------------------------------------------------------------
 int 
-keyboard_update(void)
+update_input (void)
 {
   Uint8 axis; 
 
@@ -156,11 +359,11 @@ keyboard_update(void)
 
 	case SDL_KEYDOWN:
 	  current_modifiers = event.key.keysym.mod;
-	  key_pressed[event.key.keysym.sym] = TRUE;
+	  input_state[event.key.keysym.sym] = PRESSED;
 	  break;
 	case SDL_KEYUP:
 	  current_modifiers = event.key.keysym.mod;
-	  key_pressed[event.key.keysym.sym] = FALSE;
+	  input_state[event.key.keysym.sym] = RELEASED;
 	  break;
 
 	case SDL_JOYAXISMOTION:
@@ -176,31 +379,18 @@ keyboard_update(void)
 	      // so that it behaves like "set"/"release"
 	      if (joy_sensitivity*event.jaxis.value > 10000)   /* about half tilted */
 		{
-		  // compare to previous joy-direction!
-		  if (!joy_dirstate[JOY_RIGHT])
-		    {
-		      key_pressed[SDLK_RIGHT] = TRUE;
-		      key_pressed[SDLK_LEFT] = FALSE;
-		    }
-		  joy_dirstate[JOY_RIGHT] = TRUE;
-		  joy_dirstate[JOY_LEFT] = FALSE;
+		  input_state[JOY_RIGHT] = PRESSED;
+		  input_state[JOY_LEFT] = FALSE;
 		}
 	      else if (joy_sensitivity*event.jaxis.value < -10000)
 		{
-		  if (!joy_dirstate[JOY_LEFT])
-		    {
-		      key_pressed[SDLK_LEFT] = TRUE;
-		      key_pressed[SDLK_RIGHT] = FALSE;
-		    }
-		  joy_dirstate[JOY_LEFT] = TRUE;
-		  joy_dirstate[JOY_RIGHT] = FALSE;
+		  input_state[JOY_LEFT] = PRESSED;
+		  input_state[JOY_RIGHT] = FALSE;
 		}
 	      else
 		{
-		  joy_dirstate[JOY_LEFT] = FALSE;
-		  joy_dirstate[JOY_RIGHT] = FALSE;
-		  key_pressed[SDLK_LEFT] = FALSE;
-		  key_pressed[SDLK_RIGHT] = FALSE;
+		  input_state[JOY_LEFT] = FALSE;
+		  input_state[JOY_RIGHT] = FALSE;
 		}
 	    }
 	  else if ((axis == 1) || ((joy_num_axes >=5) && (axis == 4))) /* y-axis */
@@ -209,63 +399,51 @@ keyboard_update(void)
 
 	      if (joy_sensitivity*event.jaxis.value > 10000)  
 		{
-		  if (!joy_dirstate[JOY_DOWN])
-		    {
-		      key_pressed[SDLK_DOWN] = TRUE;
-		      key_pressed[SDLK_UP] = FALSE;
-		    }
-		  joy_dirstate[JOY_DOWN] = TRUE;
-		  joy_dirstate[JOY_UP] =  FALSE;
+		  input_state[JOY_DOWN] = PRESSED;
+		  input_state[JOY_UP] =  FALSE;
 		}
 	      else if (joy_sensitivity*event.jaxis.value < -10000)
 		{
-		  if (!joy_dirstate[JOY_UP])
-		    {
-		      key_pressed[SDLK_UP] = TRUE;
-		      key_pressed[SDLK_DOWN] = FALSE;
-		    }
-		  joy_dirstate[JOY_UP] = TRUE;
-		  joy_dirstate[JOY_DOWN]= FALSE;
+		  input_state[JOY_UP] = PRESSED;
+		  input_state[JOY_DOWN]= FALSE;
 		}
 	      else
 		{
-		  joy_dirstate[JOY_UP] = FALSE;
-		  joy_dirstate[JOY_DOWN] = FALSE;
-		  key_pressed[SDLK_UP] = FALSE;
-		  key_pressed[SDLK_DOWN] = FALSE;
+		  input_state[JOY_UP] = FALSE;
+		  input_state[JOY_DOWN] = FALSE;
 		}
 	    }
 		
 	  break;
 	  
-	case SDL_JOYBUTTONDOWN:  // here we do some brute-force remappings...
-	  // map first button onto fire, 
+	case SDL_JOYBUTTONDOWN: 
+	  // first button
 	  if (event.jbutton.button == 0)
-	    key_pressed[SDLK_SPACE] = TRUE;
+	    input_state[JOY_BUTTON1] = PRESSED;
 
-	  // second button onto MouseRight (i.e Takeover)
+	  // second button
 	  else if (event.jbutton.button == 1) 
-	    CurrentlyMouseRightPressed = TRUE;
+	    input_state[JOY_BUTTON2] = PRESSED;
 
-	  // and third button onto 'RSHIFT' , i.e Activate
+	  // and third button
 	  else if (event.jbutton.button == 2) 
-	    key_pressed[SDLK_RSHIFT] = TRUE;
+	    input_state[JOY_BUTTON3] = PRESSED;
 
 	  axis_is_active = TRUE;
 	  break;
 
 	case SDL_JOYBUTTONUP:
-	  // map first button onto fire, 
+	  // first button 
 	  if (event.jbutton.button == 0)
-	    key_pressed[SDLK_SPACE] = FALSE;
+	    input_state[JOY_BUTTON1] = FALSE;
 
-	  // second button onto MouseRight (i.e Takeover)
+	  // second button
 	  else if (event.jbutton.button == 1) 
-	    CurrentlyMouseRightPressed = FALSE;
+	    input_state[JOY_BUTTON2] = FALSE;
 
-	  // and third button onto 'RSHIFT' , i.e Activate
+	  // and third button
 	  else if (event.jbutton.button == 2) 
-	    key_pressed[SDLK_RSHIFT] = FALSE;
+	    input_state[JOY_BUTTON3] = FALSE;
 
 	  axis_is_active = FALSE;
 	  break;
@@ -282,16 +460,15 @@ keyboard_update(void)
 	case SDL_MOUSEBUTTONDOWN:
 	  if (event.button.button == SDL_BUTTON_LEFT)
 	    {
-	      CurrentlyMouseLeftPressed = TRUE;
+	      input_state[MOUSE_BUTTON1] = PRESSED;
 	      axis_is_active = TRUE;
 	    }
 
 	  if (event.button.button == SDL_BUTTON_RIGHT)
-	    CurrentlyMouseRightPressed = TRUE;
+	    input_state[MOUSE_BUTTON2] = PRESSED;
 
-	  // we just map middle->Rshift (i.e. Activate)
 	  if (event.button.button == SDL_BUTTON_MIDDLE)  
-	    key_pressed[SDLK_RSHIFT] = TRUE;
+	    input_state[MOUSE_BUTTON3] = PRESSED;
 
 	  // wheel events are immediately released, so we rather
 	  // count the number of not yet read-out events
@@ -307,15 +484,15 @@ keyboard_update(void)
         case SDL_MOUSEBUTTONUP:
 	  if (event.button.button == SDL_BUTTON_LEFT)
 	    {
-	      CurrentlyMouseLeftPressed = FALSE;
+	      input_state[MOUSE_BUTTON1] = FALSE;
 	      axis_is_active = FALSE;
 	    }
 
 	  if (event.button.button == SDL_BUTTON_RIGHT)
-	    CurrentlyMouseRightPressed = FALSE;
+	    input_state[MOUSE_BUTTON2] = FALSE;
 
-	  if (event.button.button == SDL_BUTTON_MIDDLE)  // we just map middle->Escape
-	    key_pressed[SDLK_RSHIFT] = FALSE;
+	  if (event.button.button == SDL_BUTTON_MIDDLE)
+	    input_state[MOUSE_BUTTON3] = FALSE;
 
 	  break;
 
@@ -339,33 +516,58 @@ int
 getchar_raw (void)
 {
   SDL_Event event;
-  int Returnkey;
-
+  int Returnkey = 0;
+  
   //  keyboard_update ();   /* treat all pending keyboard-events */
 
-  while (1)
+  while ( !Returnkey )
     {
       SDL_WaitEvent (&event);    /* wait for next event */
       
-      if (event.type == SDL_KEYDOWN)
+      switch (event.type)
 	{
+	case SDL_KEYDOWN:
 	  /* 
 	   * here we use the fact that, I cite from SDL_keyboard.h:
 	   * "The keyboard syms have been cleverly chosen to map to ASCII"
 	   * ... I hope that this design feature is portable, and durable ;)  
 	   */
 	  Returnkey = (int) event.key.keysym.sym;
-	  if ( event.key.keysym.mod & KMOD_SHIFT ) Returnkey = toupper( (int)event.key.keysym.sym );
-	  return ( Returnkey );
-	}
-      else
-	{
+	  if ( event.key.keysym.mod & KMOD_SHIFT ) 
+	    Returnkey = toupper( (int)event.key.keysym.sym );
+	  break;
+
+	case SDL_JOYBUTTONDOWN: 
+	  if (event.jbutton.button == 0)
+	    Returnkey = JOY_BUTTON1;
+	  else if (event.jbutton.button == 1) 
+	    Returnkey = JOY_BUTTON2;
+	  else if (event.jbutton.button == 2) 
+	    Returnkey = JOY_BUTTON3;
+	  break;
+
+	case SDL_MOUSEBUTTONDOWN:
+	  if (event.button.button == SDL_BUTTON_LEFT)
+	    Returnkey = MOUSE_BUTTON1;
+	  else if (event.button.button == SDL_BUTTON_RIGHT)
+	    Returnkey = MOUSE_BUTTON2;
+	  else if (event.button.button == SDL_BUTTON_MIDDLE)  
+	    Returnkey = MOUSE_BUTTON3;
+	  else if (event.button.button == SDL_BUTTON_WHEELUP)
+	    Returnkey = MOUSE_WHEELUP;
+	  else if (event.button.button == SDL_BUTTON_WHEELDOWN)
+	    Returnkey = MOUSE_WHEELDOWN;
+	  break;
+
+	default:
 	  SDL_PushEvent (&event);  /* put this event back into the queue */
-	  keyboard_update ();  /* and treat it the usual way */
+	  update_input ();  /* and treat it the usual way */
 	  continue;
 	}
 
     } /* while(1) */
+
+  return ( Returnkey );
 
 } /* getchar_raw() */
 
@@ -380,7 +582,7 @@ ResetMouseWheel (void)
 bool
 WheelUpPressed (void)
 {
-  keyboard_update();
+  update_input();
   if (WheelUpEvents)
     return (WheelUpEvents--);
   else
@@ -390,7 +592,7 @@ WheelUpPressed (void)
 bool
 WheelDownPressed (void)
 {
-  keyboard_update();
+  update_input();
   if (WheelDownEvents)
     return (WheelDownEvents--);
   else
@@ -400,8 +602,9 @@ WheelDownPressed (void)
 bool
 KeyIsPressed (SDLKey key)
 {
-  keyboard_update();
-  return (key_pressed[key]);
+  update_input();
+
+  return( (input_state[key] & PRESSED) == PRESSED );
 }
 
 
@@ -410,8 +613,9 @@ bool
 KeyIsPressedR (SDLKey key)
 {
   bool ret;
-  keyboard_update();
-  ret = key_pressed[key];
+
+  ret = KeyIsPressed (key);
+
   ReleaseKey (key);
   return (ret);
 }
@@ -419,7 +623,7 @@ KeyIsPressedR (SDLKey key)
 void 
 ReleaseKey (SDLKey key)
 {
-  key_pressed[key] = FALSE;
+  input_state[key] = FALSE;
   return;
 }
 
@@ -427,7 +631,7 @@ bool
 ModIsPressed (SDLMod mod)
 {
   bool ret;
-  keyboard_update();
+  update_input();
   ret = ( (current_modifiers & mod) != 0) ;
   return (ret);
 }
@@ -443,43 +647,80 @@ NoDirectionPressed (void)
 } // int NoDirectionPressed(void)
 
 
-bool
-MouseRightPressed(void)
-{
-  keyboard_update();
-  return (CurrentlyMouseRightPressed);
-}
+//----------------------------------------------------------------------
+// check if a particular key has been pressed
 
 
+
+// check if any keys or buttons1 are pressed
 bool
-MouseRightPressedR (void)
+any_key_pressed (void)
 {
-  bool ret;
-  keyboard_update();
-  ret = CurrentlyMouseRightPressed;
-  CurrentlyMouseRightPressed = FALSE;
+  int i;
+  bool ret = FALSE;
+
+  update_input();
+
+  for (i=0; i<SDLK_LAST; i++)
+    if ( just_pressed(input_state[i]) )
+      { 
+	clear_fresh(input_state[i]);
+	ret = TRUE; 
+	break;
+      }
+  if ( just_pressed(input_state[JOY_BUTTON1]) )
+    {
+      clear_fresh (input_state[JOY_BUTTON1]);
+      ret = TRUE;
+    }
+
+  if ( just_pressed(input_state[MOUSE_BUTTON1]) )
+    {
+      ret = TRUE;
+      clear_fresh (input_state[MOUSE_BUTTON1]);
+    }
+
   return (ret);
-}
+
+}  // any_key_pressed()
 
 bool
-MouseLeftPressed(void)
+cmd_is_active (enum _cmds cmd)
 {
-  keyboard_update();
-  return CurrentlyMouseLeftPressed;
-}
+  if (cmd >= CMD_LAST)
+    {
+      DebugPrintf (0, "ERROR: Illegal command '%d'\n", cmd);
+      Terminate (ERR);
+    }
 
+  if ( KeyIsPressed( key_cmds[cmd][0] ) || 
+       KeyIsPressed( key_cmds[cmd][1] ) || 
+       KeyIsPressed( key_cmds[cmd][2] ))
+    return (TRUE);
+  else
+    return (FALSE);
+
+} // cmd_is_active()
+
+// --------------------------------------------------
+// the same but release the keys: use only for menus!
+// --------------------------------------------------
 bool
-MouseLeftPressedR (void)
+cmd_is_activeR (enum _cmds cmd)
 {
-  bool ret;
-  keyboard_update();
-  ret = CurrentlyMouseLeftPressed;
-  CurrentlyMouseLeftPressed = FALSE;
-  return (ret);
-}
+  if (cmd >= CMD_LAST)
+    {
+      DebugPrintf (0, "ERROR: Illegal command '%d'\n", cmd);
+      Terminate (ERR);
+    }
 
+  if ( KeyIsPressedR( key_cmds[cmd][0] ) || 
+       KeyIsPressedR( key_cmds[cmd][1] ) || 
+       KeyIsPressedR( key_cmds[cmd][2] ))
+    return (TRUE);
+  else
+    return (FALSE);
 
-
-
+} // cmd_is_active()
 
 #undef _intput_c

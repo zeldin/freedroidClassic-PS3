@@ -44,7 +44,10 @@
 #include "SDL_rotozoom.h"
 #include "takeover.h"
 
-const SDL_VideoInfo *vid_info;/* info about current video mode */
+const SDL_VideoInfo *vid_info;	/* info about current video mode */
+int vid_bpp;
+
+int fonts_loaded = FALSE;
 
 void PutPixel (SDL_Surface * surface, int x, int y, Uint32 pixel);
 int Load_Fonts (void);
@@ -334,15 +337,23 @@ void
 TakeScreenshot(void)
 {
   static int Number_Of_Screenshot=0;
-  char *Screenshoot_Filename;
+  char Screenshoot_Filename[100];
+  
+  Activate_Conservative_Frame_Computation();
 
-  Screenshoot_Filename=MyMalloc(100);
-  DebugPrintf (1, "\n\nScreenshoot function called.\n\n");
   sprintf( Screenshoot_Filename , "Screenshot_%d.bmp", Number_Of_Screenshot );
-  DebugPrintf(1, "\n\nScreenshoot function: The Filename is: %s.\n\n" , Screenshoot_Filename );
   SDL_SaveBMP( ne_screen , Screenshoot_Filename );
   Number_Of_Screenshot++;
-  free(Screenshoot_Filename);
+  DisplayBanner ("Screenshot", NULL,  BANNER_NO_SDL_UPDATE | BANNER_FORCE_UPDATE );
+  MakeGridOnScreen(NULL);
+  SDL_Flip (ne_screen);
+  Play_Sound (SCREENSHOT_SOUND);
+
+  while (cmd_is_active(CMD_SCREENSHOT)) SDL_Delay(1);
+
+  DisplayBanner (NULL, NULL, BANNER_FORCE_UPDATE );
+
+  return;
 
 } // void TakeScreenshot(void)
 
@@ -580,17 +591,17 @@ InitPictures (void)
 
   oldfont = GetCurrentFont ();
 
-  if (first_call)
+  if (!fonts_loaded)
     Load_Fonts ();
 
-  SetCurrentFont (FPS_Display_BFont);
-  printf_SDL (ne_screen, User_Rect.x + 50, Screen_Rect.h - 100, "Loading Theme config ...");
+  SetCurrentFont (Font0_BFont);
+
+  init_progress ("Loading pictures");
 
   LoadThemeConfigurationFile();
 
-  printf_SDL (ne_screen, -1, -1, " ok\n");
+  update_progress (15);
 
-  printf_SDL (ne_screen, User_Rect.x + 50, -1, "Loading image data ");
   //---------- get Map blocks
   fpath = find_file (MAP_BLOCK_FILE, GRAPHICS_DIR, USE_THEME, CRITICAL);
   Load_Block (fpath, 0, 0, NULL, INIT_ONLY);	/* init function */
@@ -601,7 +612,7 @@ InitPictures (void)
 	OrigMapBlockSurfacePointer[line][col] = Load_Block (NULL, line, col, &OrigBlock_Rect,0); 
 	MapBlockSurfacePointer[line][col] = OrigMapBlockSurfacePointer[line][col];
       }
-  printf_SDL (ne_screen, -1, -1, ".");
+  update_progress (20);
   //---------- get Droid-model  blocks
   fpath = find_file (DROID_BLOCK_FILE, GRAPHICS_DIR, USE_THEME, CRITICAL);
   Load_Block (fpath, 0, 0, NULL, INIT_ONLY);
@@ -618,7 +629,7 @@ InitPictures (void)
 
   //  SDL_SetAlpha( Me.pic, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
 
-  printf_SDL (ne_screen, -1, -1, ".");
+  update_progress (30);
   //---------- get Bullet blocks
   fpath = find_file (BULLET_BLOCK_FILE, GRAPHICS_DIR, USE_THEME, CRITICAL);
   Load_Block (fpath, 0, 0, NULL, INIT_ONLY);
@@ -628,7 +639,8 @@ InitPictures (void)
 	FreeIfUsed (Bulletmap[line].SurfacePointer[col]);
 	Bulletmap[line].SurfacePointer[col] = Load_Block (NULL, line, col, &OrigBlock_Rect, 0);
       }
-  printf_SDL (ne_screen, -1, -1, ".");
+
+  update_progress (35);
 
   //---------- get Blast blocks
   fpath = find_file (BLAST_BLOCK_FILE, GRAPHICS_DIR, USE_THEME, CRITICAL);
@@ -639,7 +651,9 @@ InitPictures (void)
 	FreeIfUsed (Blastmap[line].SurfacePointer[col]);
 	Blastmap[line].SurfacePointer[col] = Load_Block (NULL, line, col, &OrigBlock_Rect, 0);
       }
-  printf_SDL (ne_screen, -1, -1, ".");
+
+  update_progress (45);
+
   //---------- get Digit blocks
   fpath = find_file (DIGIT_BLOCK_FILE, GRAPHICS_DIR, USE_THEME, CRITICAL);
   Load_Block (fpath, 0, 0, NULL, INIT_ONLY);
@@ -650,11 +664,14 @@ InitPictures (void)
       FreeIfUsed (EnemyDigitSurfacePointer[col]);
       EnemyDigitSurfacePointer[col] = Load_Block (NULL, 0, col + 10, &OrigDigit_Rect, 0);
     }
-  printf_SDL (ne_screen, -1, -1, ".");
+  update_progress(50);
 
   //---------- get Takeover pics
-  GetTakeoverGraphics ();
-  printf_SDL (ne_screen, -1, -1, ".");
+  FreeIfUsed(to_blocks);   /* this happens when we do theme-switching */
+  fpath = find_file (TO_BLOCK_FILE, GRAPHICS_DIR, USE_THEME, CRITICAL);
+  to_blocks = Load_Block (fpath, 0, 0, NULL, 0);
+
+  update_progress (60);
 
   FreeIfUsed(ship_on_pic);
   ship_on_pic = IMG_Load (find_file (SHIP_ON_PIC_FILE, GRAPHICS_DIR, USE_THEME, CRITICAL));
@@ -665,13 +682,15 @@ InitPictures (void)
   if (first_call)
     {
       //  create the tmp block-build storage 
-      tmp = SDL_CreateRGBSurface( 0 , Block_Rect.w, Block_Rect.h, screen_bpp, 0, 0, 0, 0);
+      tmp = SDL_CreateRGBSurface( 0 , Block_Rect.w, Block_Rect.h, vid_bpp, 0, 0, 0, 0);
       BuildBlock = SDL_DisplayFormatAlpha (tmp); 
       SDL_FreeSurface (tmp);
 
-      // takeover pics
+      // takeover background pics
       fpath = find_file (TAKEOVER_BG_PIC_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
       takeover_bg_pic = Load_Block (fpath, 0, 0, NULL, 0);
+      set_takeover_rects (); // setup takeover rectangles
+
       // cursor shapes
       arrow_cursor = init_system_cursor (arrow_xpm);
       crosshair_cursor = init_system_cursor (crosshair_xpm);
@@ -682,7 +701,9 @@ InitPictures (void)
       console_bg_pic1 = Load_Block (fpath, 0, 0, NULL, 0);
       fpath = find_file (CONSOLE_BG_PIC2_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
       console_bg_pic2 = Load_Block (fpath, 0, 0, NULL, 0);
-      printf_SDL (ne_screen, -1, -1, ".");
+
+      update_progress (80);
+
       arrow_up = IMG_Load (find_file ("arrow_up.png", GRAPHICS_DIR, NO_THEME, CRITICAL) );
       arrow_down = IMG_Load (find_file ("arrow_down.png", GRAPHICS_DIR, NO_THEME, CRITICAL) );
       arrow_right = IMG_Load (find_file ("arrow_right.png", GRAPHICS_DIR, NO_THEME, CRITICAL) );
@@ -690,7 +711,8 @@ InitPictures (void)
       //---------- get Banner
       fpath = find_file (BANNER_BLOCK_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
       banner_pic = Load_Block (fpath, 0, 0, NULL, 0);
-      printf_SDL (ne_screen, -1, -1, ".");
+
+      update_progress (90);
       //---------- get Droid images ----------
       for (i=0; i<NUM_DROIDS; i++)
 	{
@@ -709,6 +731,7 @@ InitPictures (void)
 	  packed_portraits[i] = load_raw_pic (fpath);
 	}
 
+      update_progress (95);
       // we need the 999.png in any case for transparency!
       strcpy( fname, Druidmap[DRUID999].druidname );
       strcat( fname , ".png" );
@@ -731,11 +754,12 @@ InitPictures (void)
 	}
 
     } // if first_call
-  
-  printf_SDL (ne_screen, -1, -1, " ok\n");
 
+  update_progress (96);
   // if scale != 1 then we need to rescale everything now
   ScaleGraphics (GameConfig.scale);
+
+  update_progress (98);
 
   // make sure bullet-surfaces get re-generated!
   for ( i = 0 ; i < MAXBULLETS ; i++ )
@@ -843,7 +867,7 @@ Load_Block (char *fpath, int line, int col, SDL_Rect * block, int flags)
 
   if (usealpha)
     SDL_SetAlpha (pic, 0, 0);	/* clear per-surf alpha for internal blit */
-  tmp = SDL_CreateRGBSurface (0, dim.w, dim.h, screen_bpp, 0, 0, 0, 0);
+  tmp = SDL_CreateRGBSurface (0, dim.w, dim.h, vid_bpp, 0, 0, 0, 0);
   if (usealpha)
     ret = SDL_DisplayFormatAlpha (tmp);
   else
@@ -869,8 +893,9 @@ void
 Init_Video (void)
 {
   char vid_driver[81];
-  Uint32 flags;  /* flags for SDL video mode */
+  Uint32 vid_flags;  		/* flags for SDL video mode */
   char *fpath;
+  char *YN[2] = {"no", "yes"};
 
   /* Initialize the SDL library */
   // if ( SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER) == -1 ) 
@@ -897,10 +922,29 @@ Init_Video (void)
 
   vid_info = SDL_GetVideoInfo (); /* just curious */
   SDL_VideoDriverName (vid_driver, 80);
+  vid_bpp = vid_info->vfmt->BitsPerPixel;
+  
+  DebugPrintf (0, "Video info summary from SDL:\n");
+  DebugPrintf (0, "----------------------------------------------------------------------\n");
+  DebugPrintf (0, "Is it possible to create hardware surfaces: %s\n" , YN[vid_info->hw_available]);
+  DebugPrintf (0, "Is there a window manager available: %s\n", YN[vid_info->wm_available]);
+  DebugPrintf (0, "Are hardware to hardware blits accelerated: %s\n", YN[vid_info->blit_hw]);
+  DebugPrintf (0, "Are hardware to hardware colorkey blits accelerated: %s\n", YN[vid_info->blit_hw_CC]);
+  DebugPrintf (0, "Are hardware to hardware alpha blits accelerated: %s\n", YN[vid_info->blit_hw_A]);
+  DebugPrintf (0, "Are software to hardware blits accelerated: %s\n", YN[vid_info->blit_sw]);
+  DebugPrintf (0, "Are software to hardware colorkey blits accelerated: %s\n", YN[vid_info->blit_sw_CC]);
+  DebugPrintf (0, "Are software to hardware alpha blits accelerated: %s\n", YN[vid_info->blit_sw_A]);
+  DebugPrintf (0, "Are color fills accelerated: %s\n", YN[vid_info->blit_fill]);
+  DebugPrintf (0, "Total amount of video memory in Kilobytes: %d\n", vid_info->video_mem);
+  DebugPrintf (0, "Pixel format of the video device: bpp = %d, bytes/pixel = %d\n", 
+	       vid_bpp, vid_info->vfmt->BytesPerPixel);
+  DebugPrintf (0, "Video Driver Name: %s\n", vid_driver);
+  DebugPrintf (0, "----------------------------------------------------------------------\n");
+
   
   //  flags = SDL_HWSURFACE | SDL_DOUBLEBUF;
-  flags = 0;
-  if (GameConfig.UseFullscreen) flags |= SDL_FULLSCREEN;
+  vid_flags = 0;
+  if (GameConfig.UseFullscreen) vid_flags |= SDL_FULLSCREEN;
 
   if (vid_info->wm_available)  /* if there's a window-manager */
     {
@@ -909,9 +953,7 @@ Init_Video (void)
       if (fpath) SDL_WM_SetIcon( IMG_Load (fpath), NULL);
     }
 
-  screen_bpp = 16; /* start with the simplest */
-
-  if( !(ne_screen = SDL_SetVideoMode ( Screen_Rect.w, Screen_Rect.h , 0 , flags)) )
+  if( !(ne_screen = SDL_SetVideoMode ( Screen_Rect.w, Screen_Rect.h , 0 , vid_flags)) )
     {
       DebugPrintf (0, "ERORR: Couldn't set %d x %d video mode. SDL: %s\n",
 		   Screen_Rect.w, Screen_Rect.h, SDL_GetError()); 
@@ -999,6 +1041,10 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
     /* Here p is the address to the pixel we want to set */
     Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 
+    /* no valid point to set: return */
+    if ( !surface || (x<0) || (x >= surface->w) || (y<0) || (y >= surface->h) )
+      return;
+
     switch(bpp) {
     case 1:
         *p = pixel;
@@ -1039,21 +1085,36 @@ Load_Fonts (void)
     {
       DebugPrintf (0, "ERROR: font file named %s was not found.\n", PARA_FONT_FILE );
       Terminate(ERR);
-    } else
-      DebugPrintf(1, "\nSDL Para Font initialisation successful.\n");
+    }
+
+  fpath = find_file (FONT0_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
+  if ( ( Font0_BFont = LoadFont (fpath, GameConfig.scale) ) == NULL )
+    {
+      DebugPrintf (0, "ERROR: font file named %s was not found.\n", FONT0_FILE);
+      Terminate(ERR);
+    }
+
+  fpath = find_file (FONT1_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
+  if ( ( Font1_BFont = LoadFont (fpath, GameConfig.scale) ) == NULL )
+    {
+      DebugPrintf (0, "ERROR: font file named %s was not found.\n", FONT1_FILE);
+      Terminate(ERR);
+    }
+
+  fpath = find_file (FONT2_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
+  if ( ( Font2_BFont = LoadFont (fpath, GameConfig.scale) ) == NULL )
+    {
+      DebugPrintf (0, "ERROR: font file named %s was not found.\n", FONT2_FILE);
+      Terminate(ERR);
+    }
+
 
   Menu_BFont = Para_BFont;
 
-  fpath = find_file (FPS_FONT_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
-  if ( ( FPS_Display_BFont = LoadFont (fpath, GameConfig.scale) ) == NULL )
-    {
-      DebugPrintf (0, "ERROR: font file named %s was not found.\n", FPS_FONT_FILE);
-      Terminate(ERR);
-    } else
-      DebugPrintf(1, "\nSDL FPS Display Font initialisation successful.\n");
-
   /* choose a font for highscore displaying... */
   Highscore_BFont = Para_BFont;
+
+  fonts_loaded = TRUE;
 
   return (OK);
 } // Load_Fonts ()
@@ -1090,7 +1151,7 @@ white_noise (SDL_Surface *bitmap, SDL_Rect *rect, int timeout)
     }
   
   // produce the tiles
-  tmp = SDL_CreateRGBSurface(0, rect->w, rect->h, screen_bpp, 0, 0, 0, 0);
+  tmp = SDL_CreateRGBSurface(0, rect->w, rect->h, vid_bpp, 0, 0, 0, 0);
   tmp2 = SDL_DisplayFormat (tmp);
   SDL_FreeSurface (tmp);
   SDL_BlitSurface (bitmap, rect, tmp2, NULL);
@@ -1180,7 +1241,7 @@ ScaleGraphics (float scale)
   if (first_call)
     ScaleStatRects (scale);
 
-  printf_SDL (ne_screen, User_Rect.x + 50, -1, "Rescaling graphics ...");
+  //  printf_SDL (ne_screen, User_Rect.x + 50, -1, "Rescaling graphics ...");
 
   //---------- rescale Map blocks
   for (line = 0; line < NUM_COLORS; line ++)
@@ -1189,7 +1250,7 @@ ScaleGraphics (float scale)
 	ScalePic( &OrigMapBlockSurfacePointer[line][col], scale);
 	MapBlockSurfacePointer[line][col] = OrigMapBlockSurfacePointer[line][col];
       }
-  printf_SDL (ne_screen, -1, -1, ".");
+  //  printf_SDL (ne_screen, -1, -1, ".");
   //---------- rescale Droid-model  blocks
   for (col = 0; col < DROID_PHASES; col ++) 
     {
@@ -1200,20 +1261,20 @@ ScaleGraphics (float scale)
       SDL_SetAlpha (EnemySurfacePointer[col], 0, 0); 
     }
 
-  printf_SDL (ne_screen, -1, -1, ".");
+  //  printf_SDL (ne_screen, -1, -1, ".");
   //---------- rescale Bullet blocks
   for (line = 0; line < Number_Of_Bullet_Types; line ++)
     for (col = 0; col < Bulletmap[line].phases; col ++)
       ScalePic( &Bulletmap[line].SurfacePointer[col], scale);
 
-  printf_SDL (ne_screen, -1, -1, ".");
+  //  printf_SDL (ne_screen, -1, -1, ".");
 
   //---------- rescale Blast blocks
   for (line = 0; line <  ALLBLASTTYPES; line ++)
     for (col = 0; col < Blastmap[line].phases; col ++)
       ScalePic (&Blastmap[line].SurfacePointer[col], scale);
 
-  printf_SDL (ne_screen, -1, -1, ".");
+  //  printf_SDL (ne_screen, -1, -1, ".");
   //---------- rescale Digit blocks
   for (col = 0; col < 10; col++)
     {
@@ -1223,11 +1284,11 @@ ScaleGraphics (float scale)
       SDL_SetAlpha (InfluDigitSurfacePointer[col], 0, 0); 
       SDL_SetAlpha (EnemyDigitSurfacePointer[col], 0, 0); 
     }
-  printf_SDL (ne_screen, -1, -1, ".");
+  //  printf_SDL (ne_screen, -1, -1, ".");
 
   //---------- rescale Takeover pics
   ScalePic (&to_blocks, scale);
-  printf_SDL (ne_screen, -1, -1, ".");
+  //  printf_SDL (ne_screen, -1, -1, ".");
 
   ScalePic (&ship_on_pic, scale);
   ScalePic (&ship_off_pic, scale);
@@ -1237,7 +1298,7 @@ ScaleGraphics (float scale)
     {
       //  create a new tmp block-build storage 
       FreeIfUsed (BuildBlock);
-      tmp = SDL_CreateRGBSurface( 0 , Block_Rect.w, Block_Rect.h, screen_bpp, 0, 0, 0, 0);
+      tmp = SDL_CreateRGBSurface( 0 , Block_Rect.w, Block_Rect.h, vid_bpp, 0, 0, 0, 0);
       BuildBlock = SDL_DisplayFormatAlpha (tmp); 
       SDL_FreeSurface (tmp);
 
@@ -1255,14 +1316,6 @@ ScaleGraphics (float scale)
       //---------- Banner
       ScalePic (&banner_pic, scale);
 
-      //---------- Droid images ----------
-      // FIXME: this still needs to be done!!!!
-      for (i=0; i<NUM_DROIDS; i++)
-	{
-	  //	  packed_portraits[i] = load_raw_pic (fpath);
-	}
-
-      // we need the 999.png in any case for transparency!
       ScalePic (&pic999, scale);
 
       // get the Ashes pics
@@ -1280,7 +1333,7 @@ ScaleGraphics (float scale)
 } // ScaleGraphics()
 
 /*----------------------------------------------------------------------
- * 
+ * scales pic by scale: frees old pic and replaces it by new one!
  *----------------------------------------------------------------------*/
 void
 ScalePic (SDL_Surface **pic, float scale)
@@ -1299,7 +1352,7 @@ ScalePic (SDL_Surface **pic, float scale)
 } // ScalePic ()
 
 /*----------------------------------------------------------------------
- * scale all "static" rectangle
+ * scale all "static" rectangles, which are theme-independent
  *----------------------------------------------------------------------*/
 void
 ScaleStatRects (float scale)
@@ -1329,7 +1382,7 @@ ScaleStatRects (float scale)
   
   ScaleRect (LeftInfo_Rect, scale);
   ScaleRect (RightInfo_Rect, scale);
-  
+
   for (i=0; i<NUM_FILL_BLOCKS; i++)
     ScaleRect (FillBlocks[i], scale);
   
@@ -1371,5 +1424,37 @@ ScaleStatRects (float scale)
 } // ScaleStatRects()
 
 
+/*----------------------------------------------------------------------
+ * toggle windowed/fullscreen modes
+ *----------------------------------------------------------------------*/
+void
+toggle_fullscreen (void)
+{
+  Uint32 vid_flags = ne_screen->flags;
+
+  //  SDL_WM_ToggleFullScreen (ne_screen);
+  
+  if (GameConfig.UseFullscreen) 
+    vid_flags &= ~SDL_FULLSCREEN;
+  else
+    vid_flags |= SDL_FULLSCREEN;
+
+  if( !(ne_screen = SDL_SetVideoMode ( Screen_Rect.w, Screen_Rect.h, 0, vid_flags)) )
+    {
+      DebugPrintf (0, "ERORR occured when trying ot toggle windowed/fullscreen %d x %d video mode.\n", 
+		   Screen_Rect.w, Screen_Rect.h);
+      DebugPrintf (0, "SDL-Error: %s\n", SDL_GetError() );
+      Terminate (ERR);
+    }
+  
+  if ( ne_screen->flags != vid_flags )
+    {
+      DebugPrintf (0, "WARNING: Failed to toggle windowed/fullscreen mode!\n");
+    }
+  else
+    GameConfig.UseFullscreen = !GameConfig.UseFullscreen;
+
+  return;
+}
 
 #undef _graphics_c

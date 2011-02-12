@@ -68,6 +68,11 @@ EXTERN SDL_Rect RightInfo_Rect;
 EXTERN SDL_Rect ConsMenuItem_Rect;
 
 
+EXTERN SDL_Rect ProgressMeter_Rect;
+EXTERN SDL_Rect ProgressBar_Rect;
+EXTERN SDL_Rect ProgressText_Rect;
+
+
 EXTERN float LastRefreshSound;
 EXTERN float LastGotIntoBlastSound;
 EXTERN float FPSover1;
@@ -136,8 +141,10 @@ EXTERN config_t GameConfig;
 EXTERN float CurrentCombatScaleFactor;
 EXTERN BFont_Info *Menu_BFont;
 EXTERN BFont_Info *Para_BFont;
-EXTERN BFont_Info *FPS_Display_BFont;
 EXTERN BFont_Info *Highscore_BFont;
+EXTERN BFont_Info *Font0_BFont;
+EXTERN BFont_Info *Font1_BFont;
+EXTERN BFont_Info *Font2_BFont;
 EXTERN int SkipAFewFrames;
 
 #undef EXTERN
@@ -181,8 +188,6 @@ EXTERN SDL_Surface *BuildBlock;			// a block for temporary pic-construction
 
 EXTERN int BannerIsDestroyed;
 
-EXTERN int screen_bpp; 			/* bits per pixel */
-
 EXTERN SDL_Surface *banner_pic;      /* the banner pic */
 EXTERN SDL_Surface *pic999;
 EXTERN SDL_RWops *packed_portraits[NUM_DROIDS];
@@ -201,6 +206,9 @@ EXTERN SDL_Surface *arrow_left;
 
 EXTERN SDL_Surface *ship_off_pic;    	/* Side-view of ship: lights off */
 EXTERN SDL_Surface *ship_on_pic;	/* Side-view of ship: lights on */
+
+EXTERN SDL_Surface *progress_meter_pic;
+EXTERN SDL_Surface *progress_filler_pic;
 
 EXTERN SDL_Rect level_rect[MAX_LEVELS]; /* rect's of levels in side-view */
 EXTERN SDL_Rect liftrow_rect[MAX_LIFT_ROWS]; /* the lift-row rect's in side-view*/

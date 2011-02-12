@@ -40,7 +40,7 @@ SDL_Rect Banner_Rect = {0, 0, 640, 64 };
 SDL_Rect Portrait_Rect = {0, 0, 132, 180};  // for droid-pic display in console
 SDL_Rect Cons_Droid_Rect = {30, 190, 132, 180};
 
-SDL_Rect Menu_Rect = {2*64, 180, 640 - 3*64, 480 - 64};
+SDL_Rect Menu_Rect = {2*64, 150, 640 - 3*64, 480 - 64};
 SDL_Rect OptionsMenu_Rect = {232, 0, 0, 0};
 
 SDL_Rect OrigDigit_Rect = {0, 0, 16, 18};  	 // not to be rescaled!
@@ -58,6 +58,10 @@ SDL_Rect Cons_Menu_Rects[4] = {
 // Startpos + dimensions of Banner-Texts 
 SDL_Rect LeftInfo_Rect = { 26, 44, 0, 0 };
 SDL_Rect RightInfo_Rect ={484, 44, 0, 0 };
+
+SDL_Rect ProgressMeter_Rect = {0, 0, 640, 480};
+SDL_Rect ProgressBar_Rect = {446, 155, 22, 111}; 
+SDL_Rect ProgressText_Rect = {213, 390, 157, 30};
 
 int ShipEmptyCounter = 0;	/* counter to Message: you have won(this ship */
 

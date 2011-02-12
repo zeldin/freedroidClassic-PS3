@@ -695,7 +695,7 @@ InitNewMission ( char *MissionName )
 
   oldfont = GetCurrentFont ();
 
-  SetCurrentFont (FPS_Display_BFont);
+  SetCurrentFont (Font0_BFont);
   //  printf_SDL (ne_screen, User_Rect.x + 50, -1, "Loading mission data ");
 
   /* Read the whole mission data to memory */
@@ -881,6 +881,7 @@ InitNewMission ( char *MissionName )
  *  
  *-----------------------------------------------------------------*/
 void
+
 InitFreedroid (int argc, char *const argv[])
 {
   int i;
@@ -913,6 +914,7 @@ InitFreedroid (int argc, char *const argv[])
   GameConfig.ShowDecals = TRUE;
   GameConfig.AllMapVisible = TRUE;    // classic setting: map always visible
   GameConfig.scale = 1.0;  	 // overall scaling of _all_ graphics (e.g. for 320x200 displays)
+  GameConfig.HogCPU = FALSE;	// default to being nice 
 
   // now load saved options from the config-file
   LoadGameConfig ();
@@ -926,13 +928,19 @@ InitFreedroid (int argc, char *const argv[])
     Copy_Rect(Classic_User_Rect, User_Rect);
 
 
-  FindAllThemes ();  // put all found themes into a list: AllThemes[]
-
   ScaleRect (Screen_Rect, GameConfig.scale);   // make sure we open a window of the right (rescaled) size!
   Init_Video ();
 
   DisplayImage (find_file (TITLE_PIC_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL)); // show title pic
   SDL_Flip(ne_screen);
+
+  Load_Fonts (); // we need this for progress-meter!
+
+  init_progress ("Loading Freedroid");
+
+  FindAllThemes ();  // put all found themes into a list: AllThemes[]
+
+  update_progress (5);
 
   Init_Audio ();
   
@@ -940,6 +948,8 @@ InitFreedroid (int argc, char *const argv[])
 
   Init_Game_Data("freedroid.ruleset");  // load the default ruleset. This can be */
 			       // overwritten from the mission file.
+
+  update_progress (10);
 
   // The default should be, that no rescaling of the
   // combat window at all is done.
@@ -954,10 +964,6 @@ InitFreedroid (int argc, char *const argv[])
   /* initialize/load the highscore list */
   InitHighscores ();
  
-  HideInvisibleMap = FALSE;	/* Hide invisible map-parts. Para-extension!! */
-
-  CurLevel = NULL; // please leave this here BEFORE InitPictures
-  
   /* Now fill the pictures correctly to the structs */
   if (!InitPictures ())
     {		
@@ -965,8 +971,7 @@ InitFreedroid (int argc, char *const argv[])
       Terminate(ERR);
     }
 
-  // Initialisieren der Schildbilder
-  //  GetShieldBlocks ();
+  update_progress (100); // finished init
 
   return;
 } /* InitFreedroid() */
@@ -1106,7 +1111,7 @@ ThouArtDefeated (void)
 
   while ( (delay=SDL_GetTicks() - now) < WAIT_AFTER_KILLED)
     {
-      // bit of a dirty hack:  get "slow motion effect" by fiddlig with FPSover1
+      // bit of a dirty hack:  get "slow motion effect" by fiddlig with FPoverSover1
       FPSover1 *= 2.0;
 
       StartTakingTimeForFPSCalculation();
@@ -1330,7 +1335,8 @@ It is developed on a free operating system (GNU/Linux) using exclusively free to
 For more information about Free Software see the GPL licence (in the file COPYING)\n\
 or visit http://www.gnu.org.\n\n\n Press fire to play.", rect.x, rect.y, &rect);
   SDL_Flip (ne_screen);
-  Wait4Fire();
+
+  wait4key();
 
   return;
 }

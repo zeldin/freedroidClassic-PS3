@@ -47,13 +47,14 @@ long oneframedelay = 0;
 long tenframedelay = 0;
 long onehundredframedelay = 0;
 float FPSover1 = 10;
-float FPSover10 = 10;
-float FPSover100 = 10;
 Uint32 Now_SDL_Ticks;
 Uint32 One_Frame_SDL_Ticks;
-Uint32 Ten_Frame_SDL_Ticks;
-Uint32 Onehundred_Frame_SDL_Ticks;
 int framenr = 0;
+
+SDL_Color progress_color = {200, 20, 20};
+
+extern int key_cmds[CMD_LAST][3]; 
+extern char *cmd_strings[CMD_LAST];
 
 // ------------------------------------------------------------
 // just a plain old sign-function
@@ -124,6 +125,7 @@ read_variable (char *data, char *var_name, char *fmt, void *var)
 #define SHOW_DECALS                  "ShowDecals"
 #define ALL_MAP_VISIBLE              "AllMapVisible"
 #define VID_SCALE_FACTOR             "Vid_ScaleFactor"
+#define HOG_CPU			     "Hog_Cpu"
 
 /*----------------------------------------------------------------------
  * LoadGameConfig(): load saved options from config-file
@@ -141,6 +143,8 @@ LoadGameConfig (void)
   off_t size, read_size;
   struct stat statbuf;
   char version_string[100];
+  char lbuf[1000]; // line-buffer for reading keyboard-config
+  int i;
 
   // first we need the user's homedir for loading/saving stuff
   if ( (homedir = getenv("HOME")) == NULL )
@@ -175,7 +179,7 @@ LoadGameConfig (void)
 
   if( (fp = fopen (fname, "r")) == NULL)
     {
-      DebugPrintf (0, "WARNING: failed to open config-file: %s\n");
+      DebugPrintf (0, "WARNING: failed to open config-file: %s\n", fname);
       return (ERR);
     }
 
@@ -224,6 +228,14 @@ LoadGameConfig (void)
   read_variable (data, SHOW_DECALS,              "%d", &GameConfig.ShowDecals);
   read_variable (data, ALL_MAP_VISIBLE,          "%d", &GameConfig.AllMapVisible);
   read_variable (data, VID_SCALE_FACTOR,         "%f", &GameConfig.scale);
+  read_variable (data, HOG_CPU,			 "%d", &GameConfig.HogCPU);
+
+  // read in keyboard-config
+  for (i=0; i < CMD_LAST; i++)
+    {
+      read_variable (data, cmd_strings[i], "%s", &lbuf);
+      sscanf (lbuf, "%d_%d_%d", &(key_cmds[i][0]), &(key_cmds[i][1]), &(key_cmds[i][2]) );
+    }
 
   free (data);
 
@@ -240,6 +252,7 @@ SaveGameConfig (void)
 {
   char fname[255];
   FILE *fp;
+  int i;
   
   if ( ConfigDir[0] == '\0')
     return (ERR);
@@ -269,6 +282,13 @@ SaveGameConfig (void)
   fprintf (fp, "%s = %d\n", SHOW_DECALS, GameConfig.ShowDecals);
   fprintf (fp, "%s = %d\n", ALL_MAP_VISIBLE, GameConfig.AllMapVisible);
   fprintf (fp, "%s = %f\n", VID_SCALE_FACTOR, GameConfig.scale);
+  fprintf (fp, "%s = %d\n", HOG_CPU, GameConfig.HogCPU);
+
+
+  // now write the keyboard->cmd mappings
+  for (i=0; i < CMD_LAST; i++)
+    fprintf (fp, "%s \t= %d_%d_%d\n", 
+	     cmd_strings[i], key_cmds[i][0], key_cmds[i][1], key_cmds[i][2]); 
 
   fclose (fp);
   return (OK);
@@ -747,18 +767,7 @@ StartTakingTimeForFPSCalculation(void)
   framenr++;
   
   One_Frame_SDL_Ticks = SDL_GetTicks();
-  if (framenr % 10 == 1)
-    Ten_Frame_SDL_Ticks = SDL_GetTicks();
-  if (framenr % 100 == 1)
-    {
-      Onehundred_Frame_SDL_Ticks=SDL_GetTicks();
-      // printf("\n%f",1/Frame_Time());
-      // printf("Me.pos.x: %g Me.pos.y: %g Me.speed.x: %g Me.speed.y: %g \n",
-      //Me.pos.x, Me.pos.y, Me.speed.x, Me.speed.y );
-      //printf("Me.maxspeed.x: %g \n",
-      //	     Druidmap[Me.type].maxspeed );
-    }
-  
+
 } // void StartTakingTimeForFPSCalculation(void)
 
 
@@ -793,12 +802,8 @@ ComputeFPSForThisFrame(void)
 
   Now_SDL_Ticks=SDL_GetTicks();
   oneframedelay=Now_SDL_Ticks-One_Frame_SDL_Ticks;
-  tenframedelay=Now_SDL_Ticks-Ten_Frame_SDL_Ticks;
-  onehundredframedelay=Now_SDL_Ticks-Onehundred_Frame_SDL_Ticks;
-  
+
   FPSover1 = 1000.0/(float)oneframedelay;
-  FPSover10 = 1000.0* 10.0 / (float) tenframedelay;
-  FPSover100 = 1000.0 * 100.0 / (float) onehundredframedelay;
   
 } // void ComputeFPSForThisFrame(void)
 
@@ -1071,6 +1076,75 @@ FS_filelength (FILE *f)
   return end;
 }
 
+/*----------------------------------------------------------------------
+ * show_progress: display empty progress meter with given text
+ *----------------------------------------------------------------------*/
+void
+init_progress (char *text)
+{
+  char *fpath;
+  SDL_Rect dst;
+  BFont_Info *oldfont;
 
+  if (text == NULL)
+    text = "Progress...";
+
+  if (!progress_meter_pic)
+    {
+      fpath = find_file (PROGRESS_METER_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
+      progress_meter_pic = Load_Block (fpath, 0, 0, NULL, 0);
+      ScalePic (&progress_meter_pic, GameConfig.scale);
+      fpath = find_file (PROGRESS_FILLER_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
+      progress_filler_pic = Load_Block (fpath, 0, 0, NULL, 0);
+      ScalePic (&progress_filler_pic, GameConfig.scale);
+
+      ScaleRect (ProgressMeter_Rect, GameConfig.scale);
+      ScaleRect (ProgressBar_Rect, GameConfig.scale);
+      ScaleRect (ProgressText_Rect, GameConfig.scale);
+    }
+
+  oldfont = GetCurrentFont ();
+  
+  SDL_SetClipRect( ne_screen , NULL );  // this unsets the clipping rectangle
+  SDL_BlitSurface( progress_meter_pic, NULL, ne_screen , &ProgressMeter_Rect );
+  
+  Copy_Rect (ProgressText_Rect, dst);
+  dst.x += ProgressMeter_Rect.x;
+  dst.y += ProgressMeter_Rect.y;
+
+  printf_SDL (ne_screen, dst.x, dst.y, text);
+
+  SDL_Flip (ne_screen);
+
+} // init_progress()
+
+
+/*----------------------------------------------------------------------
+ *  update the progress bar
+ *----------------------------------------------------------------------*/
+void
+update_progress (int percent)
+{
+  SDL_Rect dst, src;
+
+  Copy_Rect (ProgressBar_Rect, dst);
+
+  dst.h = (Uint16) (1.0*ProgressBar_Rect.h * percent / 100.0);
+
+  dst.x += ProgressMeter_Rect.x;
+  dst.y += ProgressMeter_Rect.y + ProgressBar_Rect.h - dst.h;
+
+  src.x = src.y = 0;
+  src.h = dst.h;
+  src.y += ProgressBar_Rect.h - dst.h;
+
+  //  Fill_Rect (dst, progress_color);
+  SDL_BlitSurface (progress_filler_pic, &src, ne_screen, &dst);
+
+  SDL_UpdateRects (ne_screen, 1, &dst);
+  
+  return;
+
+} // update_progress()
 
 #undef _misc_c

@@ -1,23 +1,13 @@
-SUBDIRS = src 
+SUBDIRS = src map graphics sound
 
 man_MANS = freedroid.6
 
-EXTRA_DIST = $(man_MANS) mac-osx map graphics sound
+EXTRA_DIST = $(man_MANS) mac-osx
 
 dist-hook:
 	rm -rf `find $(distdir) -name CVS`
 
-install-data-local:
-	echo "Now copying the the data-directories..."
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	cp -r $(srcdir)/$(EXTRA_DIST) $(DESTDIR)$(pkgdatadir)
-	echo "... and cleaning from CVS dirs.."
-	rm -rf `find $(DESTDIR)$(pkgdatadir) -name CVS`
-	echo "..done."
-
-
 ## Win32 specific stuff follows here
-## adjust this value to your system!!
 
 win_txts = COPYING AUTHORS README Releasetext freedroid-man
 win_dir = freedroid-$(VERSION)-win32
