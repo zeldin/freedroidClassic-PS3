@@ -685,6 +685,7 @@ InitPictures (void)
       tmp = SDL_CreateRGBSurface( 0 , Block_Rect.w, Block_Rect.h, vid_bpp, 0, 0, 0, 0);
       BuildBlock = SDL_DisplayFormatAlpha (tmp); 
       SDL_FreeSurface (tmp);
+      SDL_SetAlpha (BuildBlock, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
 
       // takeover background pics
       fpath = find_file (TAKEOVER_BG_PIC_FILE, GRAPHICS_DIR, NO_THEME, CRITICAL);
@@ -1301,6 +1302,7 @@ ScaleGraphics (float scale)
       tmp = SDL_CreateRGBSurface( 0 , Block_Rect.w, Block_Rect.h, vid_bpp, 0, 0, 0, 0);
       BuildBlock = SDL_DisplayFormatAlpha (tmp); 
       SDL_FreeSurface (tmp);
+      SDL_SetAlpha (BuildBlock, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
 
       // takeover pics
       ScalePic (&takeover_bg_pic, scale);
