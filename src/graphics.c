@@ -549,14 +549,22 @@ not resolve.... Sorry, if that interrupts a major game of yours.....\n\
 #define DIGIT_THREE_POSITION_X_STRING "Third digit x :"
 #define DIGIT_THREE_POSITION_Y_STRING "Third digit y :"
 
-  ReadValueFromString (Data, DIGIT_ONE_POSITION_X_STRING, "%hd", &FirstDigit_Rect.x);
-  ReadValueFromString (Data, DIGIT_ONE_POSITION_Y_STRING, "%hd", &FirstDigit_Rect.y);
+#if SDL_VERSION_ATLEAST(1,3,0)
+#define COORD_FORMAT "%d"
+#else
+#define COORD_FORMAT "%hd"
+#endif
 
-  ReadValueFromString (Data, DIGIT_TWO_POSITION_X_STRING, "%hd", &SecondDigit_Rect.x);
-  ReadValueFromString (Data, DIGIT_TWO_POSITION_Y_STRING, "%hd", &SecondDigit_Rect.y);
+  ReadValueFromString (Data, DIGIT_ONE_POSITION_X_STRING, COORD_FORMAT, &FirstDigit_Rect.x);
+  ReadValueFromString (Data, DIGIT_ONE_POSITION_Y_STRING, COORD_FORMAT, &FirstDigit_Rect.y);
 
-  ReadValueFromString (Data, DIGIT_THREE_POSITION_X_STRING, "%hd", &ThirdDigit_Rect.x);
-  ReadValueFromString (Data, DIGIT_THREE_POSITION_Y_STRING, "%hd", &ThirdDigit_Rect.y);
+  ReadValueFromString (Data, DIGIT_TWO_POSITION_X_STRING, COORD_FORMAT, &SecondDigit_Rect.x);
+  ReadValueFromString (Data, DIGIT_TWO_POSITION_Y_STRING, COORD_FORMAT, &SecondDigit_Rect.y);
+
+  ReadValueFromString (Data, DIGIT_THREE_POSITION_X_STRING, COORD_FORMAT, &ThirdDigit_Rect.x);
+  ReadValueFromString (Data, DIGIT_THREE_POSITION_Y_STRING, COORD_FORMAT, &ThirdDigit_Rect.y);
+
+#undef COORD_FORMAT
 
   free (Data);
 
