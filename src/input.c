@@ -554,7 +554,8 @@ getchar_raw (void)
 
   while ( !Returnkey )
     {
-      SDL_WaitEvent (&event);    /* wait for next event */
+      while (!SDL_WaitEventTimeout (&event, 10))    /* wait for next event */
+	SDL_Flip (ne_screen);
       
       switch (event.type)
 	{
