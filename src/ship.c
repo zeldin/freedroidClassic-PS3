@@ -523,6 +523,7 @@ LevelEmpty (void)
 int
 CursorIsOnRect (SDL_Rect *rect)
 {
+#ifndef __PPU__
   point CurPos;
 
   CurPos.x = input_axis.x + (UserCenter_x - 16);
@@ -531,6 +532,7 @@ CursorIsOnRect (SDL_Rect *rect)
   if ( (CurPos.x >= rect->x) && (CurPos.x <= rect->x + rect->w) )
     if ( (CurPos.y >= rect->y) && (CurPos.y <= rect->y + rect->h) )
       return (TRUE);
+#endif
   
   return (FALSE);
 
