@@ -79,6 +79,24 @@ see http://www.libsdl.org/
 --------------------------------------------------]))
 
 AC_MSG_NOTICE([[Checking for optional SDL libraries:]])
+AC_CHECK_LIB([ogg], [ogg_sync_buffer],, AC_MSG_WARN([
+--------------------------------------------------
+libogg not found!
+You need the Vorbis libs installed if you want
+Freedroid to be able to play Ogg files (e.g. the Intro theme)
+--------------------------------------------------]))
+AC_CHECK_LIB([vorbis], [vorbis_block_clear],, AC_MSG_WARN([
+--------------------------------------------------
+libvorbis not found!
+You need the Vorbis libs installed if you want
+Freedroid to be able to play Ogg files (e.g. the Intro theme)
+--------------------------------------------------]))
+AC_CHECK_LIB([vorbisfile], [ov_open],, AC_MSG_WARN([
+--------------------------------------------------
+libvorbisfile not found!
+You need the Vorbis libs installed if you want
+Freedroid to be able to play Ogg files (e.g. the Intro theme)
+--------------------------------------------------]))
 AC_CHECK_LIB([SDL_mixer], [Mix_OpenAudio],, AC_MSG_WARN([
 --------------------------------------------------
 libSDL_mixer not found!
@@ -87,12 +105,6 @@ you need the SDL_mixer library if you want sound!
 --> compiling without sound support
 --------------------------------------------------]))
 
-AC_CHECK_LIB([vorbis], [ov_open],, AC_MSG_WARN([
---------------------------------------------------
-libvorbis not found!
-You need the Vorbis libs installed if you want
-Freedroid to be able to play Ogg files (e.g. the Intro theme)
---------------------------------------------------]))
 
 
 # Checks for header files.
