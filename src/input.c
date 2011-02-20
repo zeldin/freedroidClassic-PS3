@@ -89,6 +89,28 @@ char *cmd_strings[CMD_LAST] =
     "SCREENSHOT"
   };
 
+#ifdef __PPU__
+static int joy_button_map[] = {
+  SDLK_LEFT,
+  SDLK_DOWN,
+  SDLK_RIGHT,
+  SDLK_UP,
+  SDLK_ESCAPE,   // map start button onto 'ESC'
+  0 /*R3*/,
+  0 /*L3*/,
+  0 /*SELECT*/,
+  SDLK_RETURN,   // map [] button onto 'RETURN' , i.e Activate
+  MOUSE_BUTTON1, // X button onto fire, 
+  MOUSE_BUTTON2, // and O button onto takeover
+  0 /* /\ */,
+  0 /*R1*/,
+  0 /*L1*/,
+  0 /*R2*/,
+  0 /*L2*/
+};
+#define JOY_BUTTON_COUNT (sizeof(joy_button_map)/sizeof(joy_button_map[0]))
+#endif
+
 #define FRESH_BIT   	(0x01<<8)
 #define OLD_BIT		(0x01<<9)
 #define LONG_PRESSED	(TRUE|OLD_BIT)
@@ -417,6 +439,10 @@ update_input (void)
 	  break;
 	  
 	case SDL_JOYBUTTONDOWN: 
+#ifdef JOY_BUTTON_COUNT
+	  if (event.jbutton.button < JOY_BUTTON_COUNT)
+	    input_state[KEY_PACK(joy_button_map[event.jbutton.button])] = PRESSED;
+#else
 	  // first button
 	  if (event.jbutton.button == 0)
 	    input_state[KEY_PACK(JOY_BUTTON1)] = PRESSED;
@@ -428,11 +454,16 @@ update_input (void)
 	  // and third button
 	  else if (event.jbutton.button == 2) 
 	    input_state[KEY_PACK(JOY_BUTTON3)] = PRESSED;
+#endif
 
 	  axis_is_active = TRUE;
 	  break;
 
 	case SDL_JOYBUTTONUP:
+#ifdef JOY_BUTTON_COUNT
+	  if (event.jbutton.button < JOY_BUTTON_COUNT)
+	    input_state[KEY_PACK(joy_button_map[event.jbutton.button])] = FALSE;
+#else
 	  // first button 
 	  if (event.jbutton.button == 0)
 	    input_state[KEY_PACK(JOY_BUTTON1)] = FALSE;
@@ -444,6 +475,7 @@ update_input (void)
 	  // and third button
 	  else if (event.jbutton.button == 2) 
 	    input_state[KEY_PACK(JOY_BUTTON3)] = FALSE;
+#endif
 
 	  axis_is_active = FALSE;
 	  break;
