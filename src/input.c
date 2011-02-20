@@ -392,7 +392,9 @@ update_input (void)
 	  axis = event.jaxis.axis;
 	  if (axis == 0 || ((joy_num_axes >= 5) && (axis == 3)) ) /* x-axis */
 	    {
+#ifndef __PPU__
 	      input_axis.x = event.jaxis.value;
+#endif
 
 	      // this is a bit tricky, because we want to allow direction keys
 	      // to be soft-released. When mapping the joystick->keyboard, we 
@@ -417,7 +419,9 @@ update_input (void)
 	    }
 	  else if ((axis == 1) || ((joy_num_axes >=5) && (axis == 4))) /* y-axis */
 	    {
+#ifndef __PPU__
 	      input_axis.y = event.jaxis.value;
+#endif
 
 	      if (joy_sensitivity*event.jaxis.value > 10000)  
 		{
@@ -435,6 +439,22 @@ update_input (void)
 		  input_state[KEY_PACK(JOY_DOWN)] = FALSE;
 		}
 	    }
+#ifdef __PPU__
+	  else if (axis == 2 || axis == 3) {
+	    int active;
+	    if (axis == 2)
+	      input_axis.x = event.jaxis.value;
+	    else
+	      input_axis.y = event.jaxis.value;
+	    active =
+	      (input_axis.x < -10000 || input_axis.x > 10000 ||
+	       input_axis.y < -10000 || input_axis.y > 10000);
+	    if (active != axis_is_active) {
+	      input_state[KEY_PACK(JOY_BUTTON1)] = (active? PRESSED : FALSE);
+	      axis_is_active = active;
+	    }
+	  }
+#endif
 		
 	  break;
 	  
@@ -456,7 +476,9 @@ update_input (void)
 	    input_state[KEY_PACK(JOY_BUTTON3)] = PRESSED;
 #endif
 
+#ifndef __PPU__
 	  axis_is_active = TRUE;
+#endif
 	  break;
 
 	case SDL_JOYBUTTONUP:
@@ -477,7 +499,9 @@ update_input (void)
 	    input_state[KEY_PACK(JOY_BUTTON3)] = FALSE;
 #endif
 
+#ifndef __PPU__
 	  axis_is_active = FALSE;
+#endif
 	  break;
 
 	case SDL_MOUSEMOTION:
