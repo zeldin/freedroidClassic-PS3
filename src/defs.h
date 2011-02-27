@@ -288,7 +288,7 @@ enum _sounds
   INFLUEXPLOSION_SOUND,
   WHITE_NOISE,
   ALERT_SOUND,
-  SCREENSHOT_SOUND,
+  /*SCREENSHOT_SOUND,*/
   ALL_SOUNDS   // marks the last entry always!
 };
 

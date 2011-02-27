@@ -74,7 +74,7 @@ char *SoundSampleFilenames[ALL_SOUNDS] = {
    "InfluExplosion.wav",
    "WhiteNoise.wav",
    "Alert.wav",
-   "Screenshot.wav"
+   /*"Screenshot.wav"*/
 };
 
 #ifdef HAVE_LIBSDL_MIXER

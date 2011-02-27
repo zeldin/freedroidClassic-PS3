@@ -347,7 +347,7 @@ TakeScreenshot(void)
   DisplayBanner ("Screenshot", NULL,  BANNER_NO_SDL_UPDATE | BANNER_FORCE_UPDATE );
   MakeGridOnScreen(NULL);
   SDL_Flip (ne_screen);
-  Play_Sound (SCREENSHOT_SOUND);
+  /*Play_Sound (SCREENSHOT_SOUND);*/
 
   while (cmd_is_active(CMD_SCREENSHOT)) SDL_Delay(1);
 
