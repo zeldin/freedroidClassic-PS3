@@ -97,6 +97,12 @@ libvorbisfile not found!
 You need the Vorbis libs installed if you want
 Freedroid to be able to play Ogg files (e.g. the Intro theme)
 --------------------------------------------------]))
+AC_CHECK_LIB([mikmod], [MikMod_Init],, AC_MSG_WARN([
+--------------------------------------------------
+libmikmod not found!
+You need the MikMod lib installed if you want
+Freedroid to be able to play Mod files (e.g. the Intro theme)
+--------------------------------------------------]))
 AC_CHECK_LIB([SDL_mixer], [Mix_OpenAudio],, AC_MSG_WARN([
 --------------------------------------------------
 libSDL_mixer not found!
