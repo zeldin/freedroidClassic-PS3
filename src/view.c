@@ -242,8 +242,10 @@ Assemble_Combat_Picture (int mask)
 
   if ( mask & DO_SCREEN_UPDATE )
     {
-      SDL_UpdateRect (ne_screen, User_Rect.x, User_Rect.y, User_Rect.w, User_Rect.h);
-      SDL_UpdateRect (ne_screen, TxtRect.x, TxtRect.y, TxtRect.w, TxtRect.h);
+      SDL_Rect rects[2];
+      rects[0] = User_Rect;
+      rects[1] = TxtRect;
+      SDL_UpdateRects (ne_screen, 2, rects);
     }
 
   SDL_SetClipRect (ne_screen, NULL);

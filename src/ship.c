@@ -754,8 +754,10 @@ Sensors  1: %s\n\
 
   if (flags & UPDATE_ONLY)
     {
-      SDL_UpdateRects (ne_screen, 1, &Cons_Header_Rect);
-      SDL_UpdateRects (ne_screen, 1, &Cons_Text_Rect);
+      SDL_Rect rects[2];
+      rects[0] = Cons_Header_Rect;
+      rects[1] = Cons_Text_Rect;
+      SDL_UpdateRects (ne_screen, 2, rects);
     }
   else
     SDL_Flip (ne_screen);
