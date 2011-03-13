@@ -188,6 +188,7 @@ ScrollText (char *Text, SDL_Rect *rect, int SecondsMinimumDuration )
   bool just_started = TRUE;
 
   Background = SDL_DisplayFormat( ne_screen );
+  SDL_SetAlpha (Background, 0, SDL_ALPHA_OPAQUE);
 
   first_tick = SDL_GetTicks ();
 

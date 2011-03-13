@@ -101,6 +101,7 @@ InitiateMenu (bool with_droids)
   
   if (Menu_Background) SDL_FreeSurface (Menu_Background);
   Menu_Background = SDL_DisplayFormat (ne_screen);  // keep a global copy of background 
+  SDL_SetAlpha (Menu_Background, 0, SDL_ALPHA_OPAQUE);
  
   ResetMouseWheel ();
   
