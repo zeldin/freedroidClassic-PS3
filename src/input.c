@@ -403,18 +403,20 @@ update_input (void)
 	      // so that it behaves like "set"/"release"
 	      if (joy_sensitivity*event.jaxis.value > 10000)   /* about half tilted */
 		{
-		  input_state[KEY_PACK(JOY_RIGHT)] = PRESSED;
-		  input_state[KEY_PACK(JOY_LEFT)] = FALSE;
+		  if (input_state[KEY_PACK(JOY_RIGHT)] == RELEASED)
+		      input_state[KEY_PACK(JOY_RIGHT)] = PRESSED;
+		  input_state[KEY_PACK(JOY_LEFT)] = RELEASED;
 		}
 	      else if (joy_sensitivity*event.jaxis.value < -10000)
 		{
-		  input_state[KEY_PACK(JOY_LEFT)] = PRESSED;
-		  input_state[KEY_PACK(JOY_RIGHT)] = FALSE;
+		  if (input_state[KEY_PACK(JOY_LEFT)] == RELEASED)
+		      input_state[KEY_PACK(JOY_LEFT)] = PRESSED;
+		  input_state[KEY_PACK(JOY_RIGHT)] = RELEASED;
 		}
 	      else
 		{
-		  input_state[KEY_PACK(JOY_LEFT)] = FALSE;
-		  input_state[KEY_PACK(JOY_RIGHT)] = FALSE;
+		  input_state[KEY_PACK(JOY_LEFT)] = RELEASED;
+		  input_state[KEY_PACK(JOY_RIGHT)] = RELEASED;
 		}
 	    }
 	  else if ((axis == 1) || ((joy_num_axes >=5) && (axis == 4))) /* y-axis */
@@ -425,18 +427,20 @@ update_input (void)
 
 	      if (joy_sensitivity*event.jaxis.value > 10000)  
 		{
-		  input_state[KEY_PACK(JOY_DOWN)] = PRESSED;
-		  input_state[KEY_PACK(JOY_UP)] =  FALSE;
+		  if (input_state[KEY_PACK(JOY_DOWN)] == RELEASED)
+		      input_state[KEY_PACK(JOY_DOWN)] = PRESSED;
+		  input_state[KEY_PACK(JOY_UP)] =  RELEASED;
 		}
 	      else if (joy_sensitivity*event.jaxis.value < -10000)
 		{
-		  input_state[KEY_PACK(JOY_UP)] = PRESSED;
-		  input_state[KEY_PACK(JOY_DOWN)]= FALSE;
+		  if (input_state[KEY_PACK(JOY_UP)] == RELEASED)
+		      input_state[KEY_PACK(JOY_UP)] = PRESSED;
+		  input_state[KEY_PACK(JOY_DOWN)]= RELEASED;
 		}
 	      else
 		{
-		  input_state[KEY_PACK(JOY_UP)] = FALSE;
-		  input_state[KEY_PACK(JOY_DOWN)] = FALSE;
+		  input_state[KEY_PACK(JOY_UP)] = RELEASED;
+		  input_state[KEY_PACK(JOY_DOWN)] = RELEASED;
 		}
 	    }
 #ifdef __PPU__
@@ -449,10 +453,11 @@ update_input (void)
 	    active =
 	      (input_axis.x < -10000 || input_axis.x > 10000 ||
 	       input_axis.y < -10000 || input_axis.y > 10000);
-	    if (active != axis_is_active) {
-	      input_state[KEY_PACK(JOY_BUTTON1)] = (active? PRESSED : FALSE);
-	      axis_is_active = active;
-	    }
+	    if (!active)
+	      input_state[KEY_PACK(JOY_BUTTON1)] = RELEASED;
+	    else if(input_state[KEY_PACK(JOY_BUTTON1)] == RELEASED)
+	      input_state[KEY_PACK(JOY_BUTTON1)] = PRESSED;
+	    axis_is_active = active;
 	  }
 #endif
 		
@@ -595,12 +600,17 @@ getchar_raw (void)
 	  break;
 
 	case SDL_JOYBUTTONDOWN: 
+#ifdef JOY_BUTTON_COUNT
+	  if (event.jbutton.button < JOY_BUTTON_COUNT)
+	    Returnkey = joy_button_map[event.jbutton.button];
+#else
 	  if (event.jbutton.button == 0)
 	    Returnkey = JOY_BUTTON1;
 	  else if (event.jbutton.button == 1) 
 	    Returnkey = JOY_BUTTON2;
 	  else if (event.jbutton.button == 2) 
 	    Returnkey = JOY_BUTTON3;
+#endif
 	  break;
 
 	case SDL_MOUSEBUTTONDOWN:
