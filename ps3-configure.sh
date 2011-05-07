@@ -6,9 +6,9 @@ case "$0" in
   *) srcdir=".";;
 esac
 
-LDFLAGS="-B$PSL1GHT/target/lib -B$PS3DEV/host/ppu/lib $PS3DEV/host/ppu/ppu/lib/lv2-psl1ght.o -lpsl1ght -llv2 -L$PS3DEV/ppu/lib"
-CFLAGS="-I$PS3DEV/ppu/include/SDL"
-PATH="$PS3DEV/host/ppu/bin":"$PATH"
+LDFLAGS="-L$PSL1GHT/ppu/lib -L$PS3DEV/portlibs/ppu/lib -lrt -llv2"
+CFLAGS="-I$PSL1GHT/ppu/include/SDL"
+PATH="$PS3DEV/bin":"$PS3DEV/portlibs/ppu/bin":"$PATH"
 
 export LDFLAGS
 export CFLAGS

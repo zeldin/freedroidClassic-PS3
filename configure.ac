@@ -72,6 +72,12 @@ libpng needed to run Freedroid
 see http://www.libpng.org/pub/png/libpng.html
 --------------------------------------------------]))
 
+AC_CHECK_LIB([tiff], [TIFFClientOpen],, AC_MSG_ERROR([
+--------------------------------------------------
+libtiff not actually needed to run Freedroid
+but referenced by SDL_image...
+--------------------------------------------------]))
+
 AC_CHECK_LIB([SDL_image], [IMG_LoadJPG_RW],, AC_MSG_ERROR([
 --------------------------------------------------
 SDL_image library needed for Freedroid!
