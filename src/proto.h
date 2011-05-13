@@ -360,4 +360,15 @@ EXTERN void InitHighscores (void);
 EXTERN int SaveHighscores (void);
 EXTERN void UpdateHighscores (void);
 EXTERN void ShowHighscores (void);
+
+/* ps3_osk.c */
+#undef EXTERN
+#ifdef _ps3_osk_c
+#define EXTERN
+#else
+#define EXTERN extern
+#endif
+
+EXTERN int GetStringPS3OSK (char *buf, int MaxLen);
+
 #endif

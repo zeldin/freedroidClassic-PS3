@@ -483,6 +483,13 @@ GetString (int MaxLen, int echo)
   finished = FALSE;
   curpos = 0;
 
+#ifdef __PPU__
+  GetStringPS3OSK(input, MaxLen);
+  Copy_Rect( store_rect, tmp_rect);
+  SDL_BlitSurface (store, NULL, ne_screen, &tmp_rect);
+  PutString (ne_screen, x0, y0, input);
+  SDL_Flip (ne_screen);
+#else
   while ( !finished  )
     {
       Copy_Rect( store_rect, tmp_rect);
@@ -510,6 +517,7 @@ GetString (int MaxLen, int echo)
 	}
       
     } /* while(!finished) */
+#endif
 
   DebugPrintf (2, "\n\nchar *GetString(..):  The final string is:\n");
   DebugPrintf (2,  input );

@@ -22,6 +22,8 @@ AM_CONFIG_HEADER(config.h)
 # Checks for programs.
 #AC_PROG_AWK
 AC_PROG_CC
+AM_PROG_CC_C_O
+AC_PROG_RANLIB
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
@@ -151,6 +153,8 @@ esac
 
 dnl send a signal to automake if we're compiling for win32
 AM_CONDITIONAL(WIN32, test x$win32 = xtrue)
+
+AM_CONDITIONAL(PS3, test "x$host_alias" = xppu)
 
 
 AC_CONFIG_FILES([Makefile src/Makefile map/Makefile sound/Makefile graphics/Makefile 

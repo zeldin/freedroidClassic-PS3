@@ -11,6 +11,13 @@ else
 win32_res = 
 endif
 
+if PS3
+freedroid_LDADD = libps3droid.a
+noinst_LIBRARIES = libps3droid.a
+libps3droid_a_SOURCES = ps3_osk.c
+libps3droid_a_CFLAGS = -I$(PSL1GHT)/ppu/include
+endif
+
 freedroid_SOURCES = menu.c graphics.c  map.c   init.c  ship.c \
 	takeover.c bullet.c  influ.c  misc.c  text.c  sound.c \
 	enemy.c input.c  main.c  view.c BFont.c defs.h \
