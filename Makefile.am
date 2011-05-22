@@ -34,7 +34,7 @@ FreeDroid_bundle: src/freedroid
 
 
 ## PS3 specific
-pkg:	freedroid.pkg
+pkg:	freedroid.pkg freedroid.geohot.pkg
 
 PS3DEV_BIN	= $(PS3DEV)/bin
 
@@ -58,6 +58,10 @@ freedroid.pkg: freedroid.elf $(addprefix $(srcdir)/,$(EXTRA_DIST))
 	$(MAKE) datarootdir=$(CURDIR)/$(pkg_dir)/USRDIR install-data
 	$(PS3DEV_BIN)/pkg.py --contentid $(PKG_CONTENTID) $(pkg_dir)/ $@ >> /dev/null
 	-rm -rf $(pkg_dir)
+
+freedroid.geohot.pkg: freedroid.pkg
+	cp $< $@
+	$(PS3DEV_BIN)/package_finalize $@
 
 run: freedroid.self
 	$(PS3DEV_BIN)/ps3load $<
