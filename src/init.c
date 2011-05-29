@@ -1153,7 +1153,7 @@ ThouArtDefeated (void)
   
   now = SDL_GetTicks ();
 
-  while (SDL_GetTicks() - now < SHOW_WAIT) SDL_Delay(1);
+  while (SDL_GetTicks() - now < SHOW_WAIT) { SDL_Delay(10); SDL_Flip(ne_screen); }
 
   UpdateHighscores ();
 

@@ -143,7 +143,7 @@ enum _cmds {
 #define LeftPressedR() (cmd_is_activeR(CMD_LEFT))
 #define RightPressedR() (cmd_is_activeR(CMD_RIGHT))
 
-#define wait4key()  do {while(1) {if(any_key_pressed()) break; else SDL_Delay(50);}; } while(0)
+#define wait4key()  do {while(1) {if(any_key_pressed()) break; else SDL_Delay(10); SDL_Flip( ne_screen );}; } while(0)
 
 // ----------------------------------------
 

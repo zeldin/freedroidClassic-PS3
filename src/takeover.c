@@ -273,7 +273,7 @@ Takeover (int enemynum)
       DisplayBanner (message, NULL , 0 );	
       ShowPlayground ();
       now = SDL_GetTicks();
-      while ((!FirePressedR()) && (SDL_GetTicks() - now < SHOW_WAIT) ) SDL_Delay(1);
+      while ((!FirePressedR()) && (SDL_GetTicks() - now < SHOW_WAIT) ) { SDL_Delay(10); SDL_Flip(ne_screen); }
 
     }	/* while !FinishTakeover */
 

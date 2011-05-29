@@ -349,7 +349,7 @@ TakeScreenshot(void)
   SDL_Flip (ne_screen);
   /*Play_Sound (SCREENSHOT_SOUND);*/
 
-  while (cmd_is_active(CMD_SCREENSHOT)) SDL_Delay(1);
+  while (cmd_is_active(CMD_SCREENSHOT)) { SDL_Delay(10); SDL_Flip(ne_screen); }
 
   DisplayBanner (NULL, NULL, BANNER_FORCE_UPDATE );
 

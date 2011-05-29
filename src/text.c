@@ -217,7 +217,7 @@ ScrollText (char *Text, SDL_Rect *rect, int SecondsMinimumDuration )
 	  just_started = FALSE;
 	  now = SDL_GetTicks();
 	  while ( (!FirePressed()) && (SDL_GetTicks() - now < SHOW_WAIT)) 
-	    SDL_Delay(1);  // wait before scrolling
+	    { SDL_Delay(10); SDL_Flip(ne_screen); } // wait before scrolling
 
 	  //--------------------
 	  // Returning from this function is only possible after the minimum display time has been

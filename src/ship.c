@@ -160,6 +160,7 @@ EnterLift (void)
 	  }			/* if downlevel */
 
       SDL_Delay(10);
+      SDL_Flip(ne_screen);
 
     }				/* while !SpaceReleased */
 
@@ -313,7 +314,8 @@ EnterKonsole (void)
 
   while (!ReenterGame)
     {
-      SDL_Delay(1);
+      SDL_Delay(10);
+      SDL_Flip (ne_screen);
       if (show_cursor) SDL_ShowCursor (SDL_ENABLE);
       else SDL_ShowCursor (SDL_DISABLE);
 
@@ -387,7 +389,7 @@ EnterKonsole (void)
 	      ShowLifts (CurLevel->levelnum, -1);
 
 	      while (! (FirePressedR() || EscapePressedR() || MouseRightPressedR() ))
-		SDL_Delay(1);
+		{ SDL_Delay(10); SDL_Flip(ne_screen); }
 	      PaintConsoleMenu(pos, 0);
 	      break;
 	    default: 
@@ -485,7 +487,7 @@ ShowDeckMap (Level deck)
   Me.pos.y=tmp.y;
 
   while (! (FirePressedR() || EscapePressedR() || MouseRightPressedR() )) 
-    SDL_Delay(1);
+    { SDL_Delay(10); SDL_Flip(ne_screen); }
 
   SetCombatScaleTo (1.0);
 
@@ -572,6 +574,10 @@ GreatDruidShow (void)
 	  show_droid_portrait (Cons_Droid_Rect, droidtype, DROID_ROTATION_TIME, UPDATE);
 	  key = FALSE;
 	}
+      else {
+	SDL_Delay(9);
+	SDL_Flip(ne_screen);
+      }
 
       if (MouseLeftPressedR ())
 	{
