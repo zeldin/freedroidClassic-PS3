@@ -43,7 +43,7 @@ PKG_APPID	= FDROID001
 PKG_CONTENTID	= UP0001-$(PKG_APPID)_00-0000000000000000
 
 PKG_ICON0	= $(srcdir)/ICON0.PNG
-PKG_SFOXML	= $(PS3DEV_BIN)/sfo.xml
+PKG_SFOXML	= $(srcdir)/sfo.xml
 
 CLEANFILES = freedroid.pkg freedroid.elf freedroid.self
 
