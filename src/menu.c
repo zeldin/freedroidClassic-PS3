@@ -983,8 +983,13 @@ Credits_Menu (void)
 
   
   printf_SDL (ne_screen, 2*em, -1, "Commando");
-  printf_SDL (ne_screen, col2, -1, "Android");
+  printf_SDL (ne_screen, col2, -1, "Android\n");
 
+#ifdef __PPU__
+  printf_SDL (ne_screen, -1, -1, "\n");
+  printf_SDL (ne_screen, em, -1, "PS3 PORTING:");
+  printf_SDL (ne_screen, col2, -1, "Marcus Comstedt\n");
+#endif
 
   SDL_Flip( ne_screen );
 
