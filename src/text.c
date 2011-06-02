@@ -590,7 +590,9 @@ printf_SDL (SDL_Surface *screen, int x, int y, char *fmt, ...)
   PutString (screen, x, y, TextBuffer);
   h = FontHeight (GetCurrentFont()) + 2;
 
+#ifndef __PPU__
   SDL_UpdateRect (screen, x, y, textlen, h);  // update the relevant line
+#endif
 
   if (TextBuffer[strlen(TextBuffer)-1] == '\n')
     {
