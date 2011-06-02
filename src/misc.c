@@ -146,6 +146,10 @@ LoadGameConfig (void)
   char lbuf[1000]; // line-buffer for reading keyboard-config
   int i;
 
+#ifdef __PPU__
+  /* Fixme: This should probably be per PS3 user somehow... */
+  strcpy(ConfigDir, FD_DATADIR);
+#else
   // first we need the user's homedir for loading/saving stuff
   if ( (homedir = getenv("HOME")) == NULL )
     {
@@ -154,6 +158,7 @@ LoadGameConfig (void)
     }
 
   sprintf (ConfigDir, "%s/.freedroidClassic", homedir);
+#endif
   
   if (stat(ConfigDir, &statbuf) == -1) {
     DebugPrintf (1, "Couldn't stat Config-dir %s, I'll try to create it...", ConfigDir);
