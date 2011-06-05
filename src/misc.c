@@ -1140,6 +1140,7 @@ update_progress (int percent)
   dst.y += ProgressMeter_Rect.y + ProgressBar_Rect.h - dst.h;
 
   src.x = src.y = 0;
+  src.w = dst.w;
   src.h = dst.h;
   src.y += ProgressBar_Rect.h - dst.h;
 
