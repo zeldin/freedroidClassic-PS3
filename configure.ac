@@ -6,11 +6,6 @@ SDL_VERSION=1.2.3
 
 dnl Detect the canonical host and target build environment
 
-# Kluge for PS3: config.sub doesn't know about "ppu"
-if test "x$host_alias" = xppu; then
-  ac_cv_host="powerpc64-ps3-psl1ght"
-fi
-
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
@@ -154,7 +149,7 @@ esac
 dnl send a signal to automake if we're compiling for win32
 AM_CONDITIONAL(WIN32, test x$win32 = xtrue)
 
-AM_CONDITIONAL(PS3, test "x$host_alias" = xppu)
+AM_CONDITIONAL(PS3, test "x$host_vendor" = xps3)
 
 
 AC_CONFIG_FILES([Makefile src/Makefile map/Makefile sound/Makefile graphics/Makefile 
