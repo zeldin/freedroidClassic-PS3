@@ -90,7 +90,6 @@ typedef struct SDL_RWops
             void *fileNameRef;
             void *inputStream;
             void *inputStreamRef;
-            void *skipMethod;
             void *readableByteChannel;
             void *readableByteChannelRef;
             void *readMethod;
