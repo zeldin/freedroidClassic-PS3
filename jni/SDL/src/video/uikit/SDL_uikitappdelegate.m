@@ -115,6 +115,7 @@ afterDelay:0.0];
 	
 	SDL_Window *window;
     for (window = _this->windows; window != nil; window = window->next) {
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
     }
 }
@@ -131,6 +132,7 @@ afterDelay:0.0];
 	
 	SDL_Window *window;
     for (window = _this->windows; window != nil; window = window->next) {
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
 		SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
     }
 }
