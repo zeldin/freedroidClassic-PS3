@@ -69,17 +69,17 @@ public class SDLActivity extends Activity {
     }
 
     // Events
-    protected void onPause() {
+    /*protected void onPause() {
         Log.v("SDL", "onPause()");
         super.onPause();
-        SDLActivity.nativePause();
+        // Don't call SDLActivity.nativePause(); here, it will be called by SDLSurface::surfaceDestroyed
     }
 
     protected void onResume() {
         Log.v("SDL", "onResume()");
         super.onResume();
-        SDLActivity.nativeResume();
-    }
+        // Don't call SDLActivity.nativeResume(); here, it will be called via SDLSurface::surfaceChanged->SDLActivity::startApp
+    }*/
 
     protected void onDestroy() {
         super.onDestroy();
@@ -250,12 +250,15 @@ public class SDLActivity extends Activity {
                 return false;
             }
 
-            if (!egl.eglMakeCurrent(SDLActivity.mEGLDisplay, surface, surface, SDLActivity.mEGLContext)) {
-                Log.e("SDL", "Old EGL Context doesnt work, trying with a new one");
-                createEGLContext();
+            if (egl.eglGetCurrentContext() != SDLActivity.mEGLContext) {
                 if (!egl.eglMakeCurrent(SDLActivity.mEGLDisplay, surface, surface, SDLActivity.mEGLContext)) {
-                    Log.e("SDL", "Failed making EGL Context current");
-                    return false;
+                    Log.e("SDL", "Old EGL Context doesnt work, trying with a new one");
+                    // TODO: Notify the user via a message that the old context could not be restored, and that textures need to be manually restored.
+                    createEGLContext();
+                    if (!egl.eglMakeCurrent(SDLActivity.mEGLDisplay, surface, surface, SDLActivity.mEGLContext)) {
+                        Log.e("SDL", "Failed making EGL Context current");
+                        return false;
+                    }
                 }
             }
             SDLActivity.mEGLSurface = surface;
@@ -427,7 +430,6 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     public void surfaceCreated(SurfaceHolder holder) {
         Log.v("SDL", "surfaceCreated()");
         holder.setType(SurfaceHolder.SURFACE_TYPE_GPU);
-        SDLActivity.createEGLSurface();
         enableSensor(Sensor.TYPE_ACCELEROMETER, true);
     }
 
