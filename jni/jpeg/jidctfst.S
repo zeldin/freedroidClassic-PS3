@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#ifndef __ASSEMBLY__
+#define __ASSEMBLY__
+#endif
 #include <machine/cpu-features.h>
 
     .text
