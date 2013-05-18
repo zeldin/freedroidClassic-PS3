@@ -83,7 +83,17 @@ typedef struct SDL_RWops
     Uint32 type;
     union
     {
-#ifdef __WIN32__
+#if defined(ANDROID)
+        struct
+        {
+            void *fileNameRef;
+            void *inputStreamRef;
+            void *readableByteChannelRef;
+            void *readMethod;
+            long position;
+            int size;
+        } androidio;
+#elif defined(__WIN32__)
         struct
         {
             SDL_bool append;
@@ -96,6 +106,7 @@ typedef struct SDL_RWops
             } buffer;
         } windowsio;
 #endif
+
 #ifdef HAVE_STDIO_H
         struct
         {

@@ -10,12 +10,6 @@
 // Called before SDL_main() to initialize JNI bindings in SDL library
 extern "C" void SDL_Android_Init(JNIEnv* env, jclass cls);
 
-// Library init
-extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
-{
-    return JNI_VERSION_1_4;
-}
-
 // Start up the SDL app
 extern "C" void Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jobject obj)
 {
@@ -29,8 +23,8 @@ extern "C" void Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass c
     argv[1] = NULL;
     status = SDL_main(1, argv);
 
-    /* We exit here for consistency with other platforms. */
-    exit(status);
+    /* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
+    //exit(status);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
