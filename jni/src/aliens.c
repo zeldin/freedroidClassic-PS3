@@ -32,7 +32,7 @@
 
 #ifdef __ANDROID__
 #define DIR_SEP	"/"
-#define DIR_CUR "/sdcard/"
+#define DIR_CUR "" /*"/sdcard/"*/
 #else
 #ifdef macintosh
 #define DIR_SEP	":"
