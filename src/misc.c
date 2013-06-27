@@ -167,7 +167,10 @@ LoadGameConfig (void)
     DebugPrintf (1, "ok\n");
     return (OK);
 #else
-    if (mkdir (ConfigDir, S_IREAD|S_IWRITE|S_IEXEC) == -1)
+#ifndef S_IRWXU
+#define S_IRWXU (S_IREAD|S_IWRITE|S_IEXEC)
+#endif
+    if (mkdir (ConfigDir, S_IRWXU) == -1)
       {
 	DebugPrintf (0, "WARNING: Failed to create config-dir: %s. Giving up...\n", ConfigDir);
 	return (ERR);
