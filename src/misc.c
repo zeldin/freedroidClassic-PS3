@@ -38,6 +38,10 @@
 #include "global.h"
 #include "proto.h"
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 int read_variable (char *data, char *var_name, char *fmt, void *var);
 
 char *homedir = NULL;
@@ -902,8 +906,12 @@ DebugPrintf (int db_level, char *fmt, ...)
   if (db_level <= debug_level)
     {
       vsnprintf (buffer, 5000, fmt, args);
+#ifdef ANDROID
+      __android_log_write(ANDROID_LOG_INFO, "FreeDroid", buffer);
+#else
       fprintf (stderr, buffer);
       fflush (stderr);
+#endif
     }
 
   va_end (args);
