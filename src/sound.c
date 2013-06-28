@@ -96,6 +96,18 @@ Mix_Music *MusicSongs[NUM_COLORS];
 Mix_Music *Tmp_MOD_File;
 #endif
 
+#ifdef ANDROID
+Mix_Music *Mix_LoadMUS(const char *file)
+{
+  Mix_Music *r;
+  SDL_RWops *rwo = SDL_RWFromFile (file, "rb");
+  r = Mix_LoadMUS_RW (rwo);
+  if (rwo != NULL && r == NULL)
+    SDL_RWclose (rwo);
+  return r;
+}
+#endif
+
 void 
 Init_Audio(void)
 {
