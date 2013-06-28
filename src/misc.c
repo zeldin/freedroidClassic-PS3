@@ -423,8 +423,13 @@ can easily be treated like a common string.
 char* 
 ReadAndMallocAndTerminateFile( char* filename , char* File_End_String ) 
 {
+#ifdef ANDROID
+  long size;
+  SDL_RWops *rwo;
+#else
   struct stat stbuf;
   FILE *DataFile;
+#endif
   char *Data;
   char *ReadPointer;
   // char *fpath;
@@ -432,7 +437,11 @@ ReadAndMallocAndTerminateFile( char* filename , char* File_End_String )
   DebugPrintf ( 1 , "\nchar* ReadAndMallocAndTerminateFile ( char* filename ) : The filename is: %s" , filename );
 
   // Read the whole theme data to memory 
+#ifdef ANDROID
+  if ((rwo = SDL_RWFromFile ( filename , "r")) == NULL)
+#else
   if ((DataFile = fopen ( filename , "r")) == NULL)
+#endif
     {
       DebugPrintf (0, "\n\
 \n\
@@ -464,6 +473,22 @@ not resolve.... Sorry, if that interrupts a major game of yours.....\n\
       DebugPrintf ( 1 , "\nchar* ReadAndMallocAndTerminateFile ( char* filename ) : Opening file succeeded...");
     }
 
+#ifdef ANDROID
+  size = SDL_RWseek (rwo, 0, RW_SEEK_END);
+
+  if ((Data = (char *) MyMalloc (size + 64*2 + 10000 )) == NULL)
+    {
+      DebugPrintf ( 0 , "\nchar* ReadAndMallocAndTerminateFile ( char* filename ) : Out of Memory? ");
+      Terminate(ERR);
+    }
+
+  SDL_RWseek (rwo, 0, RW_SEEK_SET);
+  SDL_RWread ( rwo, Data, (size_t) 64, (size_t) (size / 64 +1 ) );
+
+  DebugPrintf ( 1 , "\nchar* ReadAndMallocAndTerminateFile ( char* filename ) : Reading file succeeded...");
+
+  if (SDL_RWclose ( rwo ) < 0)
+#else
   if (fstat (fileno (DataFile), &stbuf) == EOF)
     {
       DebugPrintf ( 0 , "\nchar* ReadAndMallocAndTerminateFile ( char* filename ) : Error fstat-ing File....");
@@ -485,6 +510,7 @@ not resolve.... Sorry, if that interrupts a major game of yours.....\n\
   DebugPrintf ( 1 , "\nchar* ReadAndMallocAndTerminateFile ( char* filename ) : Reading file succeeded...");
 
   if (fclose ( DataFile ) == EOF)
+#endif
     {
       DebugPrintf( 0 , "\nchar* ReadAndMallocAndTerminateFile ( char* filename ) : Error while trying to close lift file....Terminating....\n\n");
       Terminate(ERR);
@@ -637,7 +663,11 @@ char *
 find_file (char *fname, char *subdir, int use_theme, int critical)
 {
   static char File_Path[500];   /* hope this will be enough */
+#ifdef ANDROID
+  SDL_RWops *rwo;
+#else
   FILE *fp;  // this is the file we want to find?
+#endif
   int i;
   bool found = FALSE;
 
@@ -658,6 +688,16 @@ find_file (char *fname, char *subdir, int use_theme, int critical)
 
   for (i=0; i < 2; i++)
     {
+#ifdef ANDROID
+      if (i)
+	break;
+      strcpy(File_Path, "");
+      if (*subdir) {
+	strcat (File_Path, subdir);
+	if (subdir[strlen(subdir)-1] != '/')
+	  strcat (File_Path, "/");
+      }
+#else
       if (i==0)
 	strcpy (File_Path, "..");   /* first try local subdirs */
       if (i==1)
@@ -666,6 +706,7 @@ find_file (char *fname, char *subdir, int use_theme, int critical)
       strcat (File_Path, "/");
       strcat (File_Path, subdir);
       strcat (File_Path, "/");
+#endif
 
       if (use_theme == USE_THEME)
 	{
@@ -675,9 +716,15 @@ find_file (char *fname, char *subdir, int use_theme, int critical)
 
       strcat (File_Path, fname);
       
+#ifdef ANDROID
+      if ( (rwo = SDL_RWFromFile (File_Path, "r")) != NULL)  /* found it? */
+	{
+	  SDL_RWclose (rwo);
+#else
       if ( (fp = fopen (File_Path, "r")) != NULL)  /* found it? */
 	{
 	  fclose (fp);
+#endif
 	  found = TRUE;
 	  DebugPrintf (1, "find_file() found %s in %s\n", fname, File_Path);
 	  break;

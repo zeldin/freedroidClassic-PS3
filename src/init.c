@@ -1200,7 +1200,11 @@ FindAllThemes (void)
   struct dirent *entry;
   char *pos;
   int len;
+#ifdef ANDROID
+  SDL_RWops *rwo;
+#else
   FILE *fp;
+#endif
 
   // just to make sure...
   AllThemes.num_themes = 0;
@@ -1212,25 +1216,40 @@ FindAllThemes (void)
 
   for (location=0; location < 2; location++)
     {
+#ifdef ANDROID
+      if (location)
+	break;
+      strcpy (dname, "graphics");
+#else
       if (location == 0)
 	strcpy (dname, FD_DATADIR);   /* first scan FD_DATADIR */
       if (location == 1)
 	strcpy (dname, ".."); /* then the local graphics-dir */
 
       strcat (dname, "/graphics");
+#endif
 
+#ifdef ANDROID
+      if ( (dir = Android_JNI_OpenDir(dname)) == NULL)
+#else
       if ( (dir = opendir(dname)) == NULL)
+#endif
 	{
 	  DebugPrintf (1, "WARNING: can't open data-directory %s...\n", dname);
 	  continue;
 	}
 
+#ifdef ANDROID
+      while ( (entry = Android_JNI_ReadDir (dir)) != NULL )
+#else
       while ( (entry = readdir (dir)) != NULL )
+#endif
 	{
 	  strcpy (fpath, dname);
 	  strcat (fpath, "/");
 	  strcat (fpath, entry->d_name);
 
+#ifndef ANDROID
 	  if ( stat(fpath, &buf) != 0 ) // error stat'ing the file
 	    {
 	      DebugPrintf (1, "WARNING: could non stat %s!\n", fpath);
@@ -1238,6 +1257,7 @@ FindAllThemes (void)
 	    }
 	  if ( ! S_ISDIR( buf.st_mode ) )  // is it a directory
 	    continue;
+#endif
 
 	  if ( (pos = strstr (entry->d_name, "_theme")) == NULL)   // does its name contain "_theme"
 	    continue;
@@ -1257,9 +1277,15 @@ FindAllThemes (void)
 	  DebugPrintf (1, "Hmm, seems we found a new theme: %s\n", tname);
 	  // check readabiltiy of "config.theme"
 	  sprintf (fpath, "%s/%s_theme/config.theme", dname, tname);
+#ifdef ANDROID
+	  if ( (rwo = SDL_RWFromFile (fpath, "r")) != NULL)
+	    { // config.theme is readable
+	      SDL_RWclose (rwo);
+#else
 	  if ( (fp = fopen (fpath, "r")) != NULL)  
 	    { // config.theme is readable
 	      fclose(fp);
+#endif
 	      DebugPrintf (1, "..and config.theme seems readable ... good! \n");
 	      // last check: is this theme already in the list??
 	      for (i=0; i< AllThemes.num_themes; i++)
@@ -1286,7 +1312,11 @@ FindAllThemes (void)
 
 	} // while more directory entries
 
+#ifdef ANDROID
+      Android_JNI_CloseDir (dir);
+#else
       closedir (dir);
+#endif
 
     } /* for all data-dir locations */
 

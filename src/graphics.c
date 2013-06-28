@@ -789,8 +789,12 @@ InitPictures (void)
 SDL_RWops *
 load_raw_pic (char *fpath)
 {
+#ifdef ANDROID
+    SDL_RWops *rwo;
+#else
     struct stat statbuf;
     FILE *fp;
+#endif
     off_t size;
     void *mem;
 
@@ -801,6 +805,24 @@ load_raw_pic (char *fpath)
 	Terminate (ERR);
       }
 
+#ifdef ANDROID
+    rwo = SDL_RWFromFile (fpath, "rb");
+    if (!rwo)
+      {
+	DebugPrintf (0, "ERROR: could not open file %s. Giving up\n", fpath);
+	Terminate (ERR);
+      }
+
+    size = SDL_RWseek (rwo, 0, RW_SEEK_END);
+    mem = MyMalloc (size);
+    SDL_RWseek (rwo, 0, RW_SEEK_SET);
+    if (SDL_RWread (rwo, mem, 1, size) != size)
+      {
+	DebugPrintf (0, "ERROR reading file %s. Giving up...\n", fpath);
+	Terminate (ERR);
+      }
+    SDL_RWclose (rwo);
+#else
     fp = fopen (fpath, "rb");
     if (!fp)
       {
@@ -816,6 +838,7 @@ load_raw_pic (char *fpath)
 	Terminate (ERR);
       }
     fclose (fp);
+#endif
     
 
     return (SDL_RWFromMem(mem, size) );

@@ -79,6 +79,12 @@
 #include <dirent.h>
 #endif
 
+#ifdef ANDROID
+extern DIR *Android_JNI_OpenDir(const char *path);
+extern int Android_JNI_CloseDir(DIR *dir);
+extern struct dirent *Android_JNI_ReadDir(DIR *dir);
+#endif
+
 #include "SDL.h"
 #include "SDL_image.h"
 
