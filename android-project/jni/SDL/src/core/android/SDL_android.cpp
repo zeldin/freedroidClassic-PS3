@@ -25,6 +25,8 @@
 
 #include "SDL_android.h"
 
+#include <dirent.h>
+
 extern "C" {
 #include "../../events/SDL_events_c.h"
 #include "../../video/android/SDL_androidkeyboard.h"
@@ -728,6 +730,106 @@ extern "C" long Android_JNI_FileSeek(SDL_RWops* ctx, long offset, int whence)
 extern "C" int Android_JNI_FileClose(SDL_RWops* ctx)
 {
     return Android_JNI_FileClose(ctx, true);
+}
+
+class Android_JNI_Dir
+{
+private:
+    jobjectArray paths;
+    struct dirent dirent;
+    jsize current, count;
+
+public:
+    Android_JNI_Dir(jobjectArray paths);
+    ~Android_JNI_Dir();
+    struct dirent *readdir();
+};
+
+Android_JNI_Dir::Android_JNI_Dir(jobjectArray p)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    paths = static_cast<jobjectArray>(mEnv->NewGlobalRef(p));
+    current = 0;
+    count = mEnv->GetArrayLength(paths);
+}
+
+Android_JNI_Dir::~Android_JNI_Dir()
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    mEnv->DeleteGlobalRef(paths);
+}
+
+struct dirent *Android_JNI_Dir::readdir()
+{
+    LocalReferenceHolder refs;
+
+    if (current >= count)
+	return NULL;
+
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    if (!refs.init(mEnv)) {
+        return NULL;
+    }
+
+    jstring str = static_cast<jstring>(mEnv->GetObjectArrayElement(paths, current));
+    const char *s = mEnv->GetStringUTFChars(str, NULL);
+    if (s == NULL) {
+	return NULL;
+    }
+    strncpy(dirent.d_name, s, sizeof(dirent.d_name));
+    mEnv->ReleaseStringUTFChars(str, s);
+    if (Android_JNI_ExceptionOccurred()) {
+        return NULL;
+    }
+    current++;
+    return &dirent;
+}
+
+extern "C" DIR *Android_JNI_OpenDir(const char *path)
+{
+    LocalReferenceHolder refs;
+
+    jmethodID mid;
+    jobject context;
+    jobject assetManager;
+    jobjectArray paths;
+
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    if (!refs.init(mEnv)) {
+        return NULL;
+    }
+
+    jstring pathJString = mEnv->NewStringUTF(path);
+
+    // context = SDLActivity.getContext();
+    mid = mEnv->GetStaticMethodID(mActivityClass,
+            "getContext","()Landroid/content/Context;");
+    context = mEnv->CallStaticObjectMethod(mActivityClass, mid);
+
+    // assetManager = context.getAssets();
+    mid = mEnv->GetMethodID(mEnv->GetObjectClass(context),
+            "getAssets", "()Landroid/content/res/AssetManager;");
+    assetManager = mEnv->CallObjectMethod(context, mid);
+
+    // paths = assetManager.list(<path>);
+    mid = mEnv->GetMethodID(mEnv->GetObjectClass(assetManager),
+            "list", "(Ljava/lang/String;)[Ljava/lang/String;");
+    paths = static_cast<jobjectArray>(mEnv->CallObjectMethod(assetManager, mid, pathJString));
+    if (Android_JNI_ExceptionOccurred()) {
+        return NULL;
+    }
+
+    return (DIR *)new Android_JNI_Dir(paths);
+}
+
+extern "C" int Android_JNI_CloseDir(DIR *dir)
+{
+    delete (Android_JNI_Dir *)dir;
+}
+
+extern "C" struct dirent *Android_JNI_ReadDir(DIR *dir)
+{
+    return ((Android_JNI_Dir *)dir)->readdir();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
