@@ -154,6 +154,9 @@ LoadGameConfig (void)
   /* Fixme: This should probably be per PS3 user somehow... */
   strcpy(ConfigDir, FD_DATADIR);
 #else
+#ifdef ANDROID
+  Android_JNI_GetFilesDir(ConfigDir, sizeof(ConfigDir));
+#else
   // first we need the user's homedir for loading/saving stuff
   if ( (homedir = getenv("HOME")) == NULL )
     {
@@ -162,6 +165,7 @@ LoadGameConfig (void)
     }
 
   sprintf (ConfigDir, "%s/.freedroidClassic", homedir);
+#endif
 #endif
   
   if (stat(ConfigDir, &statbuf) == -1) {

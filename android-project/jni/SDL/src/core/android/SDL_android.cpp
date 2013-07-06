@@ -832,4 +832,54 @@ extern "C" struct dirent *Android_JNI_ReadDir(DIR *dir)
     return ((Android_JNI_Dir *)dir)->readdir();
 }
 
+extern "C" int Android_JNI_GetFilesDir(char *buffer, int buffer_size)
+{
+    LocalReferenceHolder refs;
+
+    jmethodID mid;
+    jobject context;
+    jobject filesDir;
+    jstring path;
+
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    if (!refs.init(mEnv)) {
+        return -1;
+    }
+
+    // context = SDLActivity.getContext();
+    mid = mEnv->GetStaticMethodID(mActivityClass,
+            "getContext","()Landroid/content/Context;");
+    context = mEnv->CallStaticObjectMethod(mActivityClass, mid);
+
+    // filesDir = context.getFilesDir();
+    mid = mEnv->GetMethodID(mEnv->GetObjectClass(context),
+            "getFilesDir", "()Ljava/io/File;");
+    filesDir = mEnv->CallObjectMethod(context, mid);
+
+    // path = filesDir.getPath();
+    mid = mEnv->GetMethodID(mEnv->GetObjectClass(filesDir),
+            "getPath", "()Ljava/lang/String;");
+    path = (jstring)mEnv->CallObjectMethod(filesDir, mid);
+
+    const char *s = mEnv->GetStringUTFChars(path, NULL);
+    if (s == NULL) {
+	return -1;
+    }
+    int l = strlen(s);
+    if (l < buffer_size)
+	strcpy(buffer, s);
+    else {
+	memcpy(buffer, s, buffer_size-1);
+	buffer[buffer_size-1] = 0;
+    }
+    strncpy(buffer, s, buffer_size);
+    mEnv->ReleaseStringUTFChars(path, s);
+
+    if (Android_JNI_ExceptionOccurred()) {
+        return -1;
+    }
+    
+    return l;
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
