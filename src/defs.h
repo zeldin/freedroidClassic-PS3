@@ -124,9 +124,17 @@ enum _cmds {
 #define MouseRightPressed() KeyIsPressed(MOUSE_BUTTON2)
 #define MouseRightPressedR() KeyIsPressedR(MOUSE_BUTTON2)
 
+#ifdef ANDROID
+#define EscapePressed() KeyIsPressed(SDLK_AC_BACK)
+#else
 #define EscapePressed() KeyIsPressed(SDLK_ESCAPE)
+#endif
 #define SpacePressed() KeyIsPressed(SDLK_SPACE)
+#ifdef ANDROID
+#define EscapePressedR() KeyIsPressedR (SDLK_AC_BACK)
+#else
 #define EscapePressedR() KeyIsPressedR (SDLK_ESCAPE)
+#endif
 #define SpacePressedR() KeyIsPressedR (SDLK_SPACE)
 
 
