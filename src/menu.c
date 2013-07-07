@@ -120,9 +120,15 @@ QuitGameMenu (void)
 {
   InitiateMenu (TRUE);
 
-#ifdef __PPU__
+#if defined(__PPU__) || defined(ANDROID)
   PutString (ne_screen, User_Rect.x + User_Rect.w/10, 
-	      User_Rect.y + User_Rect.h/2, "Do you really want to quit? (\x82/\x81) ");
+	      User_Rect.y + User_Rect.h/2, "Do you really want to quit? ("
+#ifdef ANDROID
+	     "\x84/\x85"
+#else
+	     "\x82/\x81"
+#endif
+	     ") ");
   SDL_Flip (ne_screen);
 
   while ( (!MouseRightPressed()) && (!MouseLeftPressed()) ) { SDL_Delay(10); SDL_Flip(ne_screen); }
