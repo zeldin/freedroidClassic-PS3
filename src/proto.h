@@ -218,6 +218,9 @@ EXTERN bool any_key_pressed (void);
 EXTERN bool KeyIsPressed (SDLKey key);
 EXTERN bool KeyIsPressedR (SDLKey key);
 EXTERN bool ModIsPressed (SDLMod mod);
+#ifdef ANDROID
+EXTERN bool MenuPressedR (void);
+#endif
 
 EXTERN bool NoDirectionPressed (void);
 EXTERN bool cmd_is_active(enum _cmds cmd);

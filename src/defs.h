@@ -131,7 +131,7 @@ enum _cmds {
 #endif
 #define SpacePressed() KeyIsPressed(SDLK_SPACE)
 #ifdef ANDROID
-#define EscapePressedR() KeyIsPressedR (SDLK_AC_BACK)
+#define EscapePressedR() (KeyIsPressedR (SDLK_AC_BACK) || MenuPressedR())
 #else
 #define EscapePressedR() KeyIsPressedR (SDLK_ESCAPE)
 #endif

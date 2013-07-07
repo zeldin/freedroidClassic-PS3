@@ -57,6 +57,10 @@ SDLMod current_modifiers;
 
 SDL_Event event;
 
+#ifdef ANDROID
+Uint32 last_menu_press = 0;
+#endif
+
 int input_state[KEY_PACK(INPUT_LAST)];	// array of states (pressed/released) of all keys
 
 int key_cmds[CMD_LAST][3] =  // array of mappings {key1,key2,key3 -> cmd}
@@ -401,6 +405,10 @@ update_input (void)
 	  /* Look for a keypress */
 
 	case SDL_KEYDOWN:
+#ifdef ANDROID
+	  if (event.key.keysym.sym == SDLK_MENU)
+	    last_menu_press = SDL_GetTicks();
+#endif
 	  current_modifiers = event.key.keysym.mod;
 	  input_state[KEY_PACK(event.key.keysym.sym)] = PRESSED;
 	  break;
@@ -706,6 +714,16 @@ KeyIsPressedR (SDLKey key)
 
   ReleaseKey (key);
   return (ret);
+}
+
+bool
+MenuPressedR (void)
+{
+  bool ret =
+    (last_menu_press != 0 &&
+     ((Uint32)(SDL_GetTicks()-last_menu_press)) < 500);
+  last_menu_press = 0;
+  return ret;
 }
 
 void 
