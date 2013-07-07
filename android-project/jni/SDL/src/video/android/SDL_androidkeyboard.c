@@ -22,6 +22,7 @@
 #include "SDL_config.h"
 
 #include <android/log.h>
+#include <android/keycodes.h>
 
 #include "../../events/SDL_events_c.h"
 
@@ -165,16 +166,36 @@ TranslateKeycode(int keycode)
     return scancode;
 }
 
+static SDL_Joystick *
+GetJoystick(void)
+{
+    extern SDL_Joystick **SDL_joysticks;
+    if (SDL_joysticks)
+	return SDL_joysticks[0];
+}
+
 int
 Android_OnKeyDown(int keycode)
 {
-    return SDL_SendKeyboardKey(SDL_PRESSED, TranslateKeycode(keycode));
+    SDL_Joystick *j;
+    if (keycode >= AKEYCODE_BUTTON_A && keycode <= AKEYCODE_BUTTON_MODE &&
+	(j = GetJoystick()))
+	return SDL_PrivateJoystickButton(j, keycode-AKEYCODE_BUTTON_A,
+					 SDL_PRESSED);
+    else
+	return SDL_SendKeyboardKey(SDL_PRESSED, TranslateKeycode(keycode));
 }
 
 int
 Android_OnKeyUp(int keycode)
 {
-    return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
+    SDL_Joystick *j;
+    if (keycode >= AKEYCODE_BUTTON_A && keycode <= AKEYCODE_BUTTON_MODE &&
+	(j = GetJoystick()))
+	return SDL_PrivateJoystickButton(j, keycode-AKEYCODE_BUTTON_A,
+					 SDL_RELEASED);
+    else
+	return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

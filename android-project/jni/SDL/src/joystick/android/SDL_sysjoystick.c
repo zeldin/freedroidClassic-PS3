@@ -69,7 +69,7 @@ SDL_SYS_JoystickName(int index)
 int
 SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
-    joystick->nbuttons = 0;
+    joystick->nbuttons = 15;
     joystick->nhats = 0;
     joystick->nballs = 0;
     joystick->naxes = 3;
