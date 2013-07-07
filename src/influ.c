@@ -853,7 +853,7 @@ FireBullet (void)
     speed.x = 1.0;
 
   /* if using a joystick/mouse, allow exact directional shots! */
-  if ( axis_is_active )
+  if ( axis_is_active && (input_axis.x || input_axis.y))
     {
       max_val = max (abs(input_axis.x), abs(input_axis.y));
       speed.x = 1.0*input_axis.x/max_val;
