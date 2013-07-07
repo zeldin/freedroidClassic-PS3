@@ -109,6 +109,27 @@ static int joy_button_map[] = {
   0 /*L2*/
 };
 #define JOY_BUTTON_COUNT (sizeof(joy_button_map)/sizeof(joy_button_map[0]))
+#else
+#ifdef ANDROID
+static int joy_button_map[] = {
+  MOUSE_BUTTON1, // A button onto fire, 
+  MOUSE_BUTTON2, // and B button onto takeover
+  0 /* C */,
+  SDLK_RETURN,   // map X button onto 'RETURN' , i.e Activate
+  0 /* Y */,
+  0 /* Z */,
+  0 /* L1 */,
+  0 /* R1 */,
+  0 /* L2 */,
+  0 /* R2 */,
+  0 /* THUMBL */,
+  0 /* THUMBR */,
+  SDLK_AC_BACK,   // map start button onto 'BACK'
+  0 /*SELECT*/,
+  0 /*MODE*/
+};
+#define JOY_BUTTON_COUNT (sizeof(joy_button_map)/sizeof(joy_button_map[0]))
+#endif
 #endif
 
 #define FRESH_BIT   	(0x01<<8)
