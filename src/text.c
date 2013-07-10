@@ -483,6 +483,10 @@ GetString (int MaxLen, int echo)
   finished = FALSE;
   curpos = 0;
 
+#ifdef ANDROID
+  Android_JNI_ShowOSK(1);
+#endif
+
 #ifdef __PPU__
   GetStringPS3OSK(input, MaxLen);
   Copy_Rect( store_rect, tmp_rect);
@@ -517,6 +521,10 @@ GetString (int MaxLen, int echo)
 	}
       
     } /* while(!finished) */
+#endif
+
+#ifdef ANDROID
+  Android_JNI_ShowOSK(0);
 #endif
 
   DebugPrintf (2, "\n\nchar *GetString(..):  The final string is:\n");

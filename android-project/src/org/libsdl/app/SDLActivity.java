@@ -9,6 +9,7 @@ import javax.microedition.khronos.egl.*;
 import android.app.*;
 import android.content.*;
 import android.view.*;
+import android.view.inputmethod.*;
 import android.os.*;
 import android.util.Log;
 import android.graphics.*;
@@ -176,6 +177,18 @@ public class SDLActivity extends Activity {
                 SDLActivity.mIsPaused = false;
             }
         }
+    }
+
+    public static void showKeyboard(boolean show)
+    {
+	InputMethodManager imm = (InputMethodManager)
+	    mSingleton.getSystemService(INPUT_METHOD_SERVICE);
+
+	if (show)
+	    imm.showSoftInput(mSurface, InputMethodManager.SHOW_IMPLICIT);
+	else
+	    imm.hideSoftInputFromWindow(mSurface.getWindowToken(),
+					InputMethodManager.HIDE_IMPLICIT_ONLY);
     }
 
     // EGL functions
@@ -590,5 +603,38 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         }
     }
 
+    public boolean onCheckIsTextEditor() {
+	return false;
+    }
+
+    private class MyInputConnection extends BaseInputConnection {
+	public MyInputConnection() {
+	    super(SDLSurface.this, false);
+	}
+
+	public boolean performEditorAction(int actionCode) {
+	    if (actionCode == EditorInfo.IME_ACTION_DONE) {
+		InputMethodManager imm = (InputMethodManager)
+		    getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(getWindowToken(), 0);
+	    }
+
+	    // Sends enter key
+	    return super.performEditorAction(actionCode);
+	}
+    }
+
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+	outAttrs.initialCapsMode = 0;
+	outAttrs.initialSelEnd = outAttrs.initialSelStart = -1;
+	outAttrs.inputType = (InputType.TYPE_CLASS_TEXT |
+			      InputType.TYPE_TEXT_VARIATION_NORMAL |
+			      InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE);
+	outAttrs.imeOptions = (EditorInfo.IME_ACTION_DONE |
+			       EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+	
+	return new MyInputConnection();
+    }
 }
+
 

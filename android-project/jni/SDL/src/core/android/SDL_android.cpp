@@ -881,5 +881,22 @@ extern "C" int Android_JNI_GetFilesDir(char *buffer, int buffer_size)
     
     return l;
 }
+ 
+extern "C" void Android_JNI_ShowOSK(int enable)
+{
+    LocalReferenceHolder refs;
+
+    jmethodID mid;
+
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    if (!refs.init(mEnv)) {
+        return;
+    }
+
+    // SDLActivity.showKeyboard(enable);
+    mid = mEnv->GetStaticMethodID(mActivityClass,
+            "showKeyboard","(Z)V");
+    mEnv->CallStaticVoidMethod(mActivityClass, mid, (jboolean)enable);
+}
 
 /* vi: set ts=4 sw=4 expandtab: */
