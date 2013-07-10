@@ -470,6 +470,8 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     int window_y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
     int window_w;
     int window_h;
+    int width_m;
+    int height_m;
     Uint32 window_flags;
     Uint32 surface_flags;
 
@@ -598,17 +600,19 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     SDL_VideoViewport.h = height;
 
     /* Zoom in on the centered surface */
-    if (window_w > width &&
-	window_h > height) {
-	if (window_w * height >
-	    window_h * width) {
+    width_m = width + (width >> 3);
+    height_m = height + (height >> 3);
+    if (window_w > width_m &&
+	window_h > height_m) {
+	if (window_w * height_m >
+	    window_h * width_m) {
 	    SDL_VideoMagnification.w =
-		window_w * height / window_h;
-	    SDL_VideoMagnification.h = height;
+		window_w * height_m / window_h;
+	    SDL_VideoMagnification.h = height_m;
 	} else {
-	    SDL_VideoMagnification.w = width;
+	    SDL_VideoMagnification.w = width_m;
 	    SDL_VideoMagnification.h =
-		window_h * width / window_w;
+		window_h * width_m / window_w;
 	}
 	SDL_VideoMagnification.x = (window_w - SDL_VideoMagnification.w)/2;
 	SDL_VideoMagnification.y = (window_h - SDL_VideoMagnification.h)/2;
@@ -867,6 +871,8 @@ SDL_WM_ToggleFullScreen(SDL_Surface * surface)
     int row;
     int window_w;
     int window_h;
+    int width_m;
+    int height_m;
 
     if (!SDL_PublicSurface) {
         SDL_SetError("SDL_SetVideoMode() hasn't been called");
@@ -914,18 +920,20 @@ SDL_WM_ToggleFullScreen(SDL_Surface * surface)
     SDL_VideoViewport.h = SDL_VideoSurface->h;
 
     /* Zoom in on the centered surface */
-    if (window_w > SDL_VideoSurface->w &&
-	window_h > SDL_VideoSurface->h) {
+    width_m = SDL_VideoSurface->w + (SDL_VideoSurface->w >> 3);
+    height_m = SDL_VideoSurface->h + (SDL_VideoSurface->h >> 3);
+    if (window_w > width_m &&
+	window_h > height_m) {
 
-	if (window_w * SDL_VideoSurface->h >
-	    window_h * SDL_VideoSurface->w) {
+	if (window_w * height_m >
+	    window_h * width_m) {
 	    SDL_VideoMagnification.w =
-		window_w * SDL_VideoSurface->h / window_h;
-	    SDL_VideoMagnification.h = SDL_VideoSurface->h;
+		window_w * height_m / window_h;
+	    SDL_VideoMagnification.h = height_m;
 	} else {
-	    SDL_VideoMagnification.w = SDL_VideoSurface->w;
+	    SDL_VideoMagnification.w = width_m;
 	    SDL_VideoMagnification.h =
-		window_h * SDL_VideoSurface->w / window_w;
+		window_h * width_m / window_w;
 	}
 	SDL_VideoMagnification.x = (window_w - SDL_VideoMagnification.w)/2;
 	SDL_VideoMagnification.y = (window_h - SDL_VideoMagnification.h)/2;
