@@ -326,7 +326,9 @@ SDL_UpdateWindowTexture(_THIS, SDL_Window * window, SDL_Rect * rects, int numrec
             return -1;
         }
 
-        if (SDL_RenderCopy(data->renderer, data->texture, NULL, NULL) < 0) {
+        if (SDL_RenderCopy(data->renderer, data->texture,
+			   (window->magnify_enabled? &window->magnify_rect
+			    : NULL), NULL) < 0) {
             return -1;
         }
 
@@ -1526,6 +1528,18 @@ SDL_GetWindowSize(SDL_Window * window, int *w, int *h)
         if (h) {
             *h = 0;
         }
+    }
+}
+
+void
+SDL_SetWindowMagnification(SDL_Window *window,
+                           SDL_Rect *rect)
+{
+    if (rect == NULL) {
+	window->magnify_enabled = SDL_FALSE;
+    } else {
+	window->magnify_rect = *rect;
+	window->magnify_enabled = SDL_TRUE;
     }
 }
 

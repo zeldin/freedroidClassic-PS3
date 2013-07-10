@@ -500,6 +500,13 @@ extern DECLSPEC void SDLCALL SDL_GetWindowSize(SDL_Window * window, int *w,
                                                int *h);
 
 /**
+ *  \brief Set the region of the window which will actually be displayed
+ *         on screen.
+ */
+extern DECLSPEC void SDLCALL SDL_SetWindowMagnification(SDL_Window *window,
+                                                        SDL_Rect *rect);
+
+/**
  *  \brief Show a window.
  *  
  *  \sa SDL_HideWindow()

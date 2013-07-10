@@ -39,6 +39,7 @@ static SDL_Surface *SDL_PublicSurface = NULL;
 static SDL_GLContext *SDL_VideoContext = NULL;
 static Uint32 SDL_VideoFlags = 0;
 static SDL_Rect SDL_VideoViewport;
+static SDL_Rect SDL_VideoMagnification;
 static char *wm_title = NULL;
 static SDL_Surface *SDL_VideoIcon;
 static int SDL_enabled_UNICODE = 0;
@@ -291,6 +292,7 @@ SDL_CompatEventFilter(void *userdata, SDL_Event * event)
         }
     case SDL_MOUSEMOTION:
         {
+	    /* FIXME */
             event->motion.x -= SDL_VideoViewport.x;
             event->motion.y -= SDL_VideoViewport.y;
             break;
@@ -298,6 +300,7 @@ SDL_CompatEventFilter(void *userdata, SDL_Event * event)
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
         {
+	    /* FIXME */
             event->button.x -= SDL_VideoViewport.x;
             event->button.y -= SDL_VideoViewport.y;
             break;
@@ -594,6 +597,30 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     SDL_VideoViewport.w = width;
     SDL_VideoViewport.h = height;
 
+    /* Zoom in on the centered surface */
+    if (window_w > width &&
+	window_h > height) {
+	if (window_w * height >
+	    window_h * width) {
+	    SDL_VideoMagnification.w =
+		window_w * height / window_h;
+	    SDL_VideoMagnification.h = height;
+	} else {
+	    SDL_VideoMagnification.w = width;
+	    SDL_VideoMagnification.h =
+		window_h * width / window_w;
+	}
+	SDL_VideoMagnification.x = (window_w - SDL_VideoMagnification.w)/2;
+	SDL_VideoMagnification.y = (window_h - SDL_VideoMagnification.h)/2;
+	SDL_SetWindowMagnification(SDL_VideoWindow, &SDL_VideoMagnification);
+    } else {
+	SDL_VideoMagnification.x = 0;
+	SDL_VideoMagnification.y = 0;
+	SDL_VideoMagnification.w = window_w;
+	SDL_VideoMagnification.h = window_h;
+	SDL_SetWindowMagnification(SDL_VideoWindow, NULL);
+    }
+
     SDL_VideoSurface = SDL_CreateRGBSurfaceFrom(NULL, 0, 0, 32, 0, 0, 0, 0, 0);
     SDL_VideoSurface->flags |= surface_flags;
     SDL_VideoSurface->flags |= SDL_DONTFREE;
@@ -885,6 +912,31 @@ SDL_WM_ToggleFullScreen(SDL_Surface * surface)
     SDL_VideoViewport.y = (window_h - SDL_VideoSurface->h)/2;
     SDL_VideoViewport.w = SDL_VideoSurface->w;
     SDL_VideoViewport.h = SDL_VideoSurface->h;
+
+    /* Zoom in on the centered surface */
+    if (window_w > SDL_VideoSurface->w &&
+	window_h > SDL_VideoSurface->h) {
+
+	if (window_w * SDL_VideoSurface->h >
+	    window_h * SDL_VideoSurface->w) {
+	    SDL_VideoMagnification.w =
+		window_w * SDL_VideoSurface->h / window_h;
+	    SDL_VideoMagnification.h = SDL_VideoSurface->h;
+	} else {
+	    SDL_VideoMagnification.w = SDL_VideoSurface->w;
+	    SDL_VideoMagnification.h =
+		window_h * SDL_VideoSurface->w / window_w;
+	}
+	SDL_VideoMagnification.x = (window_w - SDL_VideoMagnification.w)/2;
+	SDL_VideoMagnification.y = (window_h - SDL_VideoMagnification.h)/2;
+	SDL_SetWindowMagnification(SDL_VideoWindow, &SDL_VideoMagnification);
+    } else {
+	SDL_VideoMagnification.x = 0;
+	SDL_VideoMagnification.y = 0;
+	SDL_VideoMagnification.w = window_w;
+	SDL_VideoMagnification.h = window_h;
+	SDL_SetWindowMagnification(SDL_VideoWindow, NULL);
+    }
 
     /* Do some shuffling behind the application's back if format changes */
     if (SDL_VideoSurface->format->format != SDL_WindowSurface->format->format) {

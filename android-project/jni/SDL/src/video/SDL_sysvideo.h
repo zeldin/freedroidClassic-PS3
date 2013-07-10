@@ -79,6 +79,10 @@ struct SDL_Window
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
 
+    /* Source rectangle for magnification */
+    SDL_Rect magnify_rect;
+    SDL_bool magnify_enabled;
+
     SDL_DisplayMode fullscreen_mode;
     
     float brightness;
