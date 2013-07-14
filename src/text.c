@@ -514,7 +514,7 @@ GetString (int MaxLen, int echo)
 	  input[curpos] = (char) key;   
 	  curpos ++;
 	}
-      else if (key == SDLK_BACKSPACE)
+      else if (key == SDLK_BACKSPACE || key == SDLK_DELETE)
 	{
 	  if ( curpos > 0 ) curpos --;
 	  input[curpos] = '.';
