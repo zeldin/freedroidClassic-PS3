@@ -997,6 +997,10 @@ Credits_Menu (void)
   printf_SDL (ne_screen, -1, -1, "\n");
   printf_SDL (ne_screen, em, -1, "PS3 PORTING:");
   printf_SDL (ne_screen, col2, -1, "Marcus Comstedt\n");
+#elif defined(ANDROID)
+  printf_SDL (ne_screen, -1, -1, "\n");
+  printf_SDL (ne_screen, em, -1, "OUYA PORTING:");
+  printf_SDL (ne_screen, col2, -1, "Marcus Comstedt\n");
 #endif
 
   SDL_Flip( ne_screen );
