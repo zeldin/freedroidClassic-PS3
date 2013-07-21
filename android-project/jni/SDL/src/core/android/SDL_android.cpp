@@ -141,6 +141,15 @@ extern "C" void Java_org_libsdl_app_SDLActivity_onNativeResize(
     Android_SetScreenResolution(width, height, format);
 }
 
+extern "C" void Java_org_libsdl_app_SDLActivity_onNativeVerticalObscurity(
+                                    JNIEnv* env, jclass jcls,
+                                    jint amount)
+{
+    if (Android_Window) {
+        SDL_SetWindowShake(Android_Window, amount/2);
+    }
+}
+
 // Keydown
 extern "C" void Java_org_libsdl_app_SDLActivity_onNativeKeyDown(
                                     JNIEnv* env, jclass jcls, jint keycode)

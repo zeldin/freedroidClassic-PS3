@@ -83,6 +83,9 @@ struct SDL_Window
     SDL_Rect magnify_rect;
     SDL_bool magnify_enabled;
 
+    /* Shake amount */
+    int shake;
+
     SDL_DisplayMode fullscreen_mode;
     
     float brightness;

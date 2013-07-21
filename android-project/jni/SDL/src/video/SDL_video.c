@@ -326,11 +326,38 @@ SDL_UpdateWindowTexture(_THIS, SDL_Window * window, SDL_Rect * rects, int numrec
             return -1;
         }
 
-        if (SDL_RenderCopy(data->renderer, data->texture,
-			   (window->magnify_enabled? &window->magnify_rect
-			    : NULL), NULL) < 0) {
-            return -1;
-        }
+	if (window->shake) {
+
+	    SDL_Rect destrect, viewport;
+	    SDL_RenderGetViewport(data->renderer, &viewport);
+	    destrect.x = 0;
+	    destrect.w = viewport.w;
+	    if (window->shake > 0) {
+		destrect.y = 0;
+		destrect.h = window->shake;
+	    } else {
+		destrect.y = viewport.h+window->shake;
+		destrect.h = -window->shake;
+	    }
+	    SDL_SetRenderDrawColor(data->renderer, 0, 0, 0, 0xff);
+	    if (SDL_RenderFillRect(data->renderer, &destrect) < 0) {
+		return -1;
+	    }
+	    destrect.y = window->shake;
+	    destrect.h = viewport.h;
+	    if (SDL_RenderCopy(data->renderer, data->texture,
+			       (window->magnify_enabled? &window->magnify_rect
+				: NULL), &destrect) < 0) {
+		return -1;
+	    }
+
+	} else {
+	    if (SDL_RenderCopy(data->renderer, data->texture,
+			       (window->magnify_enabled? &window->magnify_rect
+				: NULL), NULL) < 0) {
+		return -1;
+	    }
+	}
 
         SDL_RenderPresent(data->renderer);
     }
@@ -1541,6 +1568,12 @@ SDL_SetWindowMagnification(SDL_Window *window,
 	window->magnify_rect = *rect;
 	window->magnify_enabled = SDL_TRUE;
     }
+}
+
+void
+SDL_SetWindowShake(SDL_Window *window, int shake)
+{
+    window->shake = shake;
 }
 
 void

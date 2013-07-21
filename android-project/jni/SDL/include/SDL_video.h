@@ -507,6 +507,11 @@ extern DECLSPEC void SDLCALL SDL_SetWindowMagnification(SDL_Window *window,
                                                         SDL_Rect *rect);
 
 /**
+ *  \brief Set the vertical shake amount of the window.
+ */
+extern DECLSPEC void SDLCALL SDL_SetWindowShake(SDL_Window *window, int shake);
+
+/**
  *  \brief Show a window.
  *  
  *  \sa SDL_HideWindow()

@@ -133,6 +133,7 @@ public class SDLActivity extends Activity {
     public static native void nativePause();
     public static native void nativeResume();
     public static native void onNativeResize(int x, int y, int format);
+    public static native void onNativeVerticalObscurity(int amount);
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
     public static native void onNativeTouch(int touchDevId, int pointerFingerId,
@@ -450,6 +451,15 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setOnTouchListener(this);   
 
         mSensorManager = (SensorManager)context.getSystemService("sensor");  
+
+	getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+		@Override
+		public void onGlobalLayout() {
+		    Rect r = new Rect();
+		    getWindowVisibleDisplayFrame(r);
+		    SDLActivity.onNativeVerticalObscurity(r.bottom-getRootView().getHeight());
+		}
+	    });
     }
 
     // Called when we have a valid drawing surface
