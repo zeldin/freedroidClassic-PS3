@@ -622,6 +622,19 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 	    super(SDLSurface.this, false);
 	}
 
+	public boolean deleteSurroundingText (int beforeLength, int afterLength)
+	{
+	    while (beforeLength-- > 0) {
+		SDLActivity.onNativeKeyDown(KeyEvent.KEYCODE_DEL);
+		SDLActivity.onNativeKeyUp(KeyEvent.KEYCODE_DEL);
+	    }
+	    while (afterLength-- > 0) {
+		SDLActivity.onNativeKeyDown(KeyEvent.KEYCODE_FORWARD_DEL);
+		SDLActivity.onNativeKeyUp(KeyEvent.KEYCODE_FORWARD_DEL);
+	    }
+	    return true;
+	}
+
 	public boolean performEditorAction(int actionCode) {
 	    if (actionCode == EditorInfo.IME_ACTION_DONE) {
 		InputMethodManager imm = (InputMethodManager)
