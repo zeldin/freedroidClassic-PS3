@@ -12,6 +12,8 @@ LOCAL_MODULE := SDL
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
+LOCAL_CFLAGS = -DSDL_ANDROID_BLOCK_ON_PAUSE
+
 LOCAL_SRC_FILES := \
 	$(subst $(LOCAL_PATH)/,, \
 	$(wildcard $(LOCAL_PATH)/src/*.c) \

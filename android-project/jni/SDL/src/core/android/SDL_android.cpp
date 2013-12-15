@@ -32,6 +32,7 @@ extern "C" {
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidtouch.h"
 #include "../../video/android/SDL_androidvideo.h"
+#include "SDL_audio.h"
 
 #include <android/log.h>
 #include <pthread.h>
@@ -73,6 +74,9 @@ static jmethodID midAudioQuit;
 // Accelerometer data storage
 static float fLastAccelerometer[3];
 static bool bHasNewData;
+
+// Audio pause
+static bool bAudioPaused;
 
 /*******************************************************************************
                  Functions called by JNI
@@ -199,8 +203,14 @@ extern "C" void Java_org_libsdl_app_SDLActivity_nativePause(
     if (Android_Window) {
         /* Signal the pause semaphore so the event loop knows to pause and (optionally) block itself */
         if (!SDL_SemValue(Android_PauseSem)) SDL_SemPost(Android_PauseSem);
+	/*
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+	*/
+	if (!bAudioPaused && SDL_GetAudioStatus() == SDL_AUDIO_PLAYING) {
+	    SDL_PauseAudio(true);
+	    bAudioPaused = true;
+	}
     }
 }
 
@@ -209,13 +219,20 @@ extern "C" void Java_org_libsdl_app_SDLActivity_nativeResume(
                                     JNIEnv* env, jclass cls)
 {
     if (Android_Window) {
+        if (bAudioPaused) {
+	    SDL_PauseAudio(false);
+	    bAudioPaused = false;
+	}
+
         /* Signal the resume semaphore so the event loop knows to resume and restore the GL Context
          * We can't restore the GL Context here because it needs to be done on the SDL main thread
          * and this function will be called from the Java thread instead.
          */
         if (!SDL_SemValue(Android_ResumeSem)) SDL_SemPost(Android_ResumeSem);
+	/*
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+	*/
     }
 }
 
