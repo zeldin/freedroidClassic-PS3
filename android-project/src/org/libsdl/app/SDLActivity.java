@@ -92,6 +92,7 @@ public class SDLActivity extends Activity {
 	    SDLActivity.nativeResume();
 	    SDLActivity.mIsPaused = false;
 	}
+	sendBroadcast(new Intent("tv.ouya.controller.action.HIDE_CURSOR"));
     }
 
     protected void onDestroy() {
