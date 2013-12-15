@@ -75,6 +75,10 @@ static jmethodID midAudioQuit;
 static float fLastAccelerometer[3];
 static bool bHasNewData;
 
+// Joystick data storage
+static float fLastJoystick[4];
+static bool bJoyHasNewData;
+
 // Audio pause
 static bool bAudioPaused;
 
@@ -129,6 +133,7 @@ extern "C" void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
                                 "audioQuit", "()V");
 
     bHasNewData = false;
+    bJoyHasNewData = false;
 
     if(!midCreateGLContext || !midFlipBuffers || !midAudioInit ||
        !midAudioWriteShortBuffer || !midAudioWriteByteBuffer || !midAudioQuit) {
@@ -186,6 +191,18 @@ extern "C" void Java_org_libsdl_app_SDLActivity_onNativeAccel(
     fLastAccelerometer[1] = y;
     fLastAccelerometer[2] = z;
     bHasNewData = true;
+}
+
+// Joystick
+extern "C" void Java_org_libsdl_app_SDLActivity_onNativeJoystick(
+                                    JNIEnv* env, jclass jcls,
+                                    jfloat x1, jfloat y1, jfloat x2, jfloat y2)
+{
+    fLastJoystick[0] = x1;
+    fLastJoystick[1] = y1;
+    fLastJoystick[2] = x2;
+    fLastJoystick[3] = y2;
+    bJoyHasNewData = true;
 }
 
 // Quit
@@ -322,6 +339,22 @@ extern "C" SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
             values[i] = fLastAccelerometer[i];
         }
         bHasNewData = false;
+        retval = SDL_TRUE;
+    }
+
+    return retval;
+}
+
+extern "C" SDL_bool Android_JNI_GetJoystickValues(float values[4])
+{
+    int i;
+    SDL_bool retval = SDL_FALSE;
+
+    if (bJoyHasNewData) {
+        for (i = 0; i < 4; ++i) {
+            values[i] = fLastJoystick[i];
+        }
+        bJoyHasNewData = false;
         retval = SDL_TRUE;
     }
 

@@ -34,6 +34,7 @@
 #include "../SDL_joystick_c.h"
 #include "../../core/android/SDL_android.h"
 
+static const char *joystickName = "Android joystick";
 static const char *accelerometerName = "Android accelerometer";
 
 /* Function to scan the system for joysticks.
@@ -44,9 +45,9 @@ static const char *accelerometerName = "Android accelerometer";
 int
 SDL_SYS_JoystickInit(void)
 {
-    SDL_numjoysticks = 1;
+    SDL_numjoysticks = 2;
     
-    return (1);
+    return (2);
 }
 
 /* Function to get the device-dependent name of a joystick */
@@ -54,6 +55,8 @@ const char *
 SDL_SYS_JoystickName(int index)
 {
     if (index == 0) {
+        return joystickName;
+    } else if (index == 1) {
         return accelerometerName;
     } else {
         SDL_SetError("No joystick available with that index");
@@ -69,11 +72,20 @@ SDL_SYS_JoystickName(int index)
 int
 SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
-    joystick->nbuttons = 15;
-    joystick->nhats = 0;
-    joystick->nballs = 0;
-    joystick->naxes = 3;
-    joystick->name = accelerometerName;
+    if (joystick->index == 0) {
+       joystick->nbuttons = 15;
+       joystick->nhats = 0;
+       joystick->nballs = 0;
+       joystick->naxes = 4;
+       joystick->name = joystickName;
+    } else if (joystick->index == 1) {
+       joystick->nbuttons = 15;
+       joystick->nhats = 0;
+       joystick->nballs = 0;
+       joystick->naxes = 3;
+       joystick->name = accelerometerName;
+    } else
+       return -1;
     return 0;
 }
 
@@ -88,13 +100,25 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     int i;
     Sint16 value;
-    float values[3];
+    float values[4];
 
-    if (Android_JNI_GetAccelerometerValues(values)) {
-        for ( i = 0; i < 3; i++ ) {
-            value = (Sint16)(values[i] * 32767.0f);
-            SDL_PrivateJoystickAxis(joystick, i, value);
-        }
+    switch (joystick->index) {
+    case 0:
+        if (Android_JNI_GetJoystickValues(values)) {
+	    for ( i = 0; i < 4; i++ ) {
+	        value = (Sint16)(values[i] * 32767.0f);
+		SDL_PrivateJoystickAxis(joystick, i, value);
+	    }
+	}
+	break;
+    case 1:
+        if (Android_JNI_GetAccelerometerValues(values)) {
+	    for ( i = 0; i < 3; i++ ) {
+	        value = (Sint16)(values[i] * 32767.0f);
+		SDL_PrivateJoystickAxis(joystick, i, value);
+	    }
+	}
+	break;
     }
 }
 

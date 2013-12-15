@@ -147,6 +147,7 @@ public class SDLActivity extends Activity {
                                             int action, float x, 
                                             float y, float p);
     public static native void onNativeAccel(float x, float y, float z);
+    public static native void onNativeJoystick(float x1, float y1, float x2, float y2);
     public static native void nativeRunAudioThread();
 
 
@@ -618,6 +619,17 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                                       event.values[1] / SensorManager.GRAVITY_EARTH,
                                       event.values[2] / SensorManager.GRAVITY_EARTH);
         }
+    }
+
+    public boolean onGenericMotionEvent(final MotionEvent e) {
+	if ((e.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+	    SDLActivity.onNativeJoystick(e.getAxisValue(MotionEvent.AXIS_X),
+					 e.getAxisValue(MotionEvent.AXIS_Y),
+					 e.getAxisValue(MotionEvent.AXIS_Z),
+					 e.getAxisValue(MotionEvent.AXIS_RZ));
+	    return true;
+	}
+	return false;
     }
 
     public boolean onCheckIsTextEditor() {
