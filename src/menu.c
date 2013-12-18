@@ -164,10 +164,14 @@ EscapeMenu (void)
       POS_GRAPHICS_SOUND_OPTIONS,
       POS_LEGACY_OPTIONS,
       POS_ON_SCREEN_DISPLAYS,
+#ifndef ANDROID
       POS_LEVEL_EDITOR,
+#endif
       POS_HIGHSCORES,
       POS_CREDITS,
+#ifndef ANDROID
       POS_KEYCONFIG,
+#endif
       POS_QUIT
     };
   
@@ -192,10 +196,14 @@ EscapeMenu (void)
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight,"Graphics & Sound" );
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight,"Legacy Options");
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight,"On-Screen Displays" );
+#ifndef ANDROID
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Level Editor");
+#endif
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Highscores");
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Credits");
+#ifndef ANDROID
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Configure Keys");
+#endif
       PutString (ne_screen, OptionsMenu_Rect.x,Menu_Rect.y+(pos++)*fheight, "Quit Game");
 
       SDL_Flip( ne_screen );
@@ -230,19 +238,23 @@ EscapeMenu (void)
 		case POS_LEGACY_OPTIONS:
 		  Options_Menu();
 		  break;
+#ifndef ANDROID
 		case POS_LEVEL_EDITOR:
 		  LevelEditor();
 		  finished = TRUE;
 		  break;
+#endif
 		case POS_HIGHSCORES:
 		  ShowHighscores();
 		  break;
 		case POS_CREDITS:
 		  Credits_Menu();
 		  break;
+#ifndef ANDROID
 		case POS_KEYCONFIG:
 		  Key_Config_Menu();
 		  break;
+#endif
 		case POS_QUIT:
 		  QuitGameMenu ();
 		  break;
