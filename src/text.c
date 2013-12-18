@@ -366,7 +366,7 @@ void
 DisplayChar (unsigned char c)
 {
 
-  if ( !isprint(c) ) // don't accept non-printable characters
+  if ( /*!isprint(c)*/ c < 32 || c > 255 ) // don't accept non-printable characters
     {
       printf ("Illegal char passed to DisplayChar(): %d \n", c);
       Terminate(ERR);
